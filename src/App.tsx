@@ -28,6 +28,7 @@ import {
 import Exercises from "./pages/students/Exercises";
 import { useIsMobile } from "./utils";
 import Home from "./pages/Home";
+import Community from "./pages/students/Community";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -40,14 +41,7 @@ const contentStyle: React.CSSProperties = {
   textAlign: "center",
   lineHeight: "120px",
   color: "#fff",
-  backgroundColor: "#108ee9",
-  height: "100vh",
-  background:
-    "url(https://cdn.gwall2.findsoft.com.cn/prisi/3.7.4/static/img/Bitmap@2x.99db866b.png)",
-  backgroundSize: "100%",
 };
-
-
 
 const App = (): JSX.Element => {
   const isMobile = useIsMobile();
@@ -83,7 +77,7 @@ const App = (): JSX.Element => {
                 style={{ float: "left" }}
                 icon={<TeamOutlined />}
               >
-                社区
+                <Link to="/community">社区</Link>
               </Menu.Item>
               <Menu.Item
                 key="messages"
@@ -117,11 +111,11 @@ const App = (): JSX.Element => {
         <Routes>
           <Route path="exercises" element={<Exercises />} />
           <Route path="/" element={<Home />} />
+          <Route path="community" element={<Community />} />
         </Routes>
       </Content>
     </Layout>
   );
 };
-
 
 export default App;

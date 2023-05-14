@@ -4,6 +4,11 @@ import { useIsMobile } from "../utils";
 const cardsContent: React.CSSProperties = {
   margin: "0 auto",
   paddingTop: "30vh",
+  backgroundColor: "#108ee9",
+  height: "100vh",
+  background:
+    "url(https://cdn.gwall2.findsoft.com.cn/prisi/3.7.4/static/img/Bitmap@2x.99db866b.png)",
+  backgroundSize: "100% 100%",
 };
 
 const Home = () => {

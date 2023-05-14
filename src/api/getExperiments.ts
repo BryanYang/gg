@@ -1,9 +1,8 @@
 import axios from "axios";
-import { env } from "process";
 
 const PAGE_SIZE = 20;
 export const getExperiments = (page: number, pageSize = PAGE_SIZE) => {
-  if (env.MOCK_API) {
+  if (true) {
     return Promise.resolve({
       data: [
         {
