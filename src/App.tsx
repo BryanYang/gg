@@ -29,6 +29,8 @@ import Exercises from "./pages/students/Exercises";
 import { useIsMobile } from "./utils";
 import Home from "./pages/Home";
 import Community from "./pages/students/Community";
+import Message from "./pages/students/Message";
+import Help from "./pages/students/Help";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -55,8 +57,11 @@ const App = (): JSX.Element => {
     <Layout className="layout">
       <Header style={headerStyle}>
         <Row>
-          {!isMobile && <Col flex="200px">公共关系仿真实验平台</Col>}
-
+          {!isMobile && (
+            <Col flex="200px">
+              <Link to="/">公共关系仿真实验平台</Link>
+            </Col>
+          )}
           <Col flex="auto">
             <Menu
               theme="dark"
@@ -84,7 +89,7 @@ const App = (): JSX.Element => {
                 style={{ float: "left" }}
                 icon={<BellOutlined />}
               >
-                通知
+                <Link to="/messages">通知</Link>
                 <Badge count={5}>
                   <span style={{ color: "white" }}>&nbsp;&nbsp;</span>
                 </Badge>
@@ -94,7 +99,7 @@ const App = (): JSX.Element => {
                 style={{ float: "left" }}
                 icon={<QuestionCircleOutlined />}
               >
-                帮助中心
+                <Link to="/help">帮助中心</Link>
               </Menu.Item>
               <Menu.Item key="account" style={{ float: "right" }}>
                 <Avatar
@@ -112,6 +117,8 @@ const App = (): JSX.Element => {
           <Route path="exercises" element={<Exercises />} />
           <Route path="/" element={<Home />} />
           <Route path="community" element={<Community />} />
+          <Route path="messages" element={<Message />} />
+          <Route path="help" element={<Help />} />
         </Routes>
       </Content>
     </Layout>

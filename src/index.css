@@ -11,3 +11,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.layout {
+  min-height: 100Vh;
+}
+
+.ant-list-item-main {
+  text-align: left;
+}

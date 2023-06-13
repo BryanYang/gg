@@ -82,7 +82,7 @@ const ExperimentTable = () => {
   }, []);
 
   return (
-    <Content style={{padding: 20}}>
+    <Content style={{ padding: 60, width: 1440, margin: "0 auto" }}>
       <Table
         columns={columns}
         dataSource={data}
