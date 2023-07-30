@@ -31,12 +31,16 @@ import Home from "./pages/Home";
 import Community from "./pages/students/Community";
 import Message from "./pages/students/Message";
 import Help from "./pages/students/Help";
+import Profile from "./pages/students/Profile";
+import CaseList from "./pages/students/CaseList";
+import Case from "./pages/students/Case";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
   color: "#fff",
   height: 64,
   lineHeight: "64px",
+  zIndex: 10,
 };
 
 const contentStyle: React.CSSProperties = {
@@ -102,11 +106,13 @@ const App = (): JSX.Element => {
                 <Link to="/help">帮助中心</Link>
               </Menu.Item>
               <Menu.Item key="account" style={{ float: "right" }}>
-                <Avatar
-                  style={{ backgroundColor: "#87d068" }}
-                  icon={<UserOutlined />}
-                />
-                &nbsp;刘同学
+                <Link to="/profile">
+                  <Avatar
+                    style={{ backgroundColor: "#87d068" }}
+                    icon={<UserOutlined />}
+                  />
+                  &nbsp;刘同学
+                </Link>
               </Menu.Item>
             </Menu>
           </Col>
@@ -114,11 +120,14 @@ const App = (): JSX.Element => {
       </Header>
       <Content style={contentStyle}>
         <Routes>
-          <Route path="exercises" element={<Exercises />} />
           <Route path="/" element={<Home />} />
-          <Route path="community" element={<Community />} />
-          <Route path="messages" element={<Message />} />
-          <Route path="help" element={<Help />} />
+          <Route path="/exercises" element={<Exercises />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/messages" element={<Message />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/caselist" element={<CaseList />} />
+          <Route path="/case/:id" element={<Case />} />
         </Routes>
       </Content>
     </Layout>

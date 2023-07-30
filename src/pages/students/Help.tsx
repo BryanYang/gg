@@ -8,7 +8,6 @@ import {
   Row,
   Card,
   Form,
-  Input,
   Radio,
 } from "antd";
 import { getExperiments } from "../../api"; // 这里使用了一个假的API请求函数getExperiments

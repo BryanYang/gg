@@ -1,5 +1,6 @@
 import { Button, Card, Col, Divider, Row } from "antd";
 import { useIsMobile } from "../utils";
+import { Link } from "react-router-dom";
 
 const cardsContent: React.CSSProperties = {
   margin: "0 auto",
@@ -23,7 +24,9 @@ const Home = () => {
               经典案例模式中你将作为政府或企业的公关人员，处理政府或企业的日常形象公关事务、关系公关事务以及非常时期的危机公关事务。
             </div>
             <Divider />
-            <Button type="primary">开始实训</Button>
+            <Link to="/caselist">
+              <Button type="primary">开始实训</Button>
+            </Link>
           </Card>
         </Col>
         {isMobile && <Divider />}
