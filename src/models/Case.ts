@@ -1,4 +1,5 @@
 import { Exercise } from "./Exercise";
+import { User } from "./User";
 export enum CaseStep {
   Survey = 1,
   Design = 2,
@@ -6,19 +7,83 @@ export enum CaseStep {
   Report = 4,
 }
 
+export const TestCase: Case = {
+  id: "1",
+  title: "",
+  description: "农夫山泉",
+  videoUrl: "http://sss.com",
+  link: "has",
+  studyCount: 0,
+  createdAt: new Date().getTime(),
+  exercises: {
+    [CaseStep.Survey]: {
+      '1': [
+        {
+          id: 1,
+          title: "题目1",
+          score: 40,
+          options: [
+            { id: 1, description: "答案一" },
+            { id: 2, description: "答案一" },
+            { id: 3, description: "答案一" },
+            { id: 4, description: "答案一" },
+          ],
+          answerIDs: [],
+        },
+      ]
+    },
+    [CaseStep.Design]: {
+      '2': [
+        {
+          id: 2,
+          title: "题目2",
+          score: 30,
+          options: [
+            { id: 1, description: "答案一" },
+            { id: 2, description: "答案一" },
+            { id: 3, description: "答案一" },
+            { id: 4, description: "答案一" },
+          ],
+          answerIDs: [],
+        },
+      ]
+    },
+    [CaseStep.Execute]: {
+      '3': [
+        {
+          id: 3,
+          title: "题目3",
+          score: 30,
+          options: [
+            { id: 1, description: "答案一" },
+            { id: 2, description: "答案一" },
+            { id: 3, description: "答案一" },
+            { id: 4, description: "答案一" },
+          ],
+          answerIDs: [],
+        },
+      ]
+    },
+  },
+};
+
+
 export interface Case {
   id: string;
   title: string;
   description: string;
   videoUrl?: string;
   link?: string;
+  createdAt: number;
+  isDeleted?: boolean;
 
+  studyCount: number;
   // {
   //   [CaseStep.Survey]: {
   //     [institutionID]: [...]
   //   }
   // }
-  exercises: Partial<Record<CaseStep, Record<string ,Exercise[]>>>;
+  exercises: Partial<Record<CaseStep, Record<string, Exercise[]>>>;
 }
 
 export interface CaseStudyInterface {
@@ -35,8 +100,8 @@ export interface CaseStudyInterface {
 }
 
 export class CaseStudy implements CaseStudyInterface {
-  public caseID: string;
-  public userID: string;
+  public case: Case;
+  public user: User;
   public currentStep: CaseStep;
   public currentExerciseID?: string;
   // key: exerciseID, value: ExerciseOptionID
@@ -46,14 +111,25 @@ export class CaseStudy implements CaseStudyInterface {
   createdAt?: string;
   updatedAt?: string;
 
-  constructor(data: Omit<CaseStudyInterface, "createdAt" | "updatedAt">) {
-    this.caseID = data.caseID;
-    this.userID = data.userID;
+  constructor(
+    data: Pick<CaseStudyInterface, "currentStep" | "answer" | 'currentExerciseID'> & {
+      case: Case;
+      user: User;
+    }
+  ) {
+    this.case = data.case;
+    this.user = data.user;
     this.currentStep = data.currentStep;
     this.answer = data.answer;
-    this.score = data.score;
-    this.reportID = data.reportID;
     this.currentExerciseID = data.currentExerciseID;
+  }
+
+  get caseID() {
+    return this.case.id;
+  }
+
+  get userID() {
+    return this.user.id;
   }
 
   public getCase: () => Promise<Case> = async () => {
@@ -62,54 +138,9 @@ export class CaseStudy implements CaseStudyInterface {
 }
 
 export const TestCaseStudy: CaseStudy = new CaseStudy({
-  caseID: "1",
-  userID: "1",
-  currentStep: CaseStep.Survey,
+  case: TestCase,
+  user: { name: 'yang', id: '1'} as User,
+  currentStep: CaseStep.Execute,
   answer: {},
 });
 
-export const TestCase: Case = {
-  id: "1",
-  title: "",
-  description: "农夫山泉",
-  videoUrl: "http://sss.com",
-  link: "has",
-  exercises: {
-    [CaseStep.Survey]: [{
-      id: 1,
-      title: "题目1",
-      score: 40,
-      options: [
-        { id: 1, description: "答案一" },
-        { id: 2, description: "答案一" },
-        { id: 3, description: "答案一" },
-        { id: 4, description: "答案一" },
-      ],
-      answerIDs: [],
-    }],
-    [CaseStep.Design]: [{
-      id: 1,
-      title: "题目1",
-      score: 30,
-      options: [
-        { id: 1, description: "答案一" },
-        { id: 2, description: "答案一" },
-        { id: 3, description: "答案一" },
-        { id: 4, description: "答案一" },
-      ],
-      answerIDs: [],
-    }],
-    [CaseStep.Execute]: [{
-      id: 1,
-      title: "题目1",
-      score: 30,
-      options: [
-        { id: 1, description: "答案一" },
-        { id: 2, description: "答案一" },
-        { id: 3, description: "答案一" },
-        { id: 4, description: "答案一" },
-      ],
-      answerIDs: [],
-    }],
-  },
-}

@@ -1,5 +1,5 @@
 import { AntDesignOutlined } from "@ant-design/icons";
-import { Col, Row, Avatar, Form, Input, Button } from "antd";
+import { Col, Row, Avatar, Form, Input, Button, Divider } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { useCallback } from "react";
 
@@ -55,7 +55,7 @@ const Profile = () => {
               </Button>
             </Form.Item>
           </Form>
-          <hr />
+          <Divider />
           <Form
             labelCol={{ span: 4 }}
             size="large"

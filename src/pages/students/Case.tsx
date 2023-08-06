@@ -1,5 +1,15 @@
-import { Badge, Button, Card, Modal, Progress, Radio, Space, Tag } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import {
+  Badge,
+  Button,
+  Card,
+  Modal,
+  Progress,
+  Radio,
+  Space,
+  Steps,
+  Tag,
+} from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Draggable from "react-draggable";
 import {
   useSprings,
@@ -11,31 +21,33 @@ import {
 import "./index.less";
 import { Exercise } from "../../models/Exercise";
 
-import { TestCaseStudy } from '../../models/Case';
+import { CaseStep, TestCaseStudy } from "../../models/Case";
+import { useParams } from "react-router-dom";
 
-
-interface CaseProps {
-  id: string;
-}
-
-const CaseStudy = (props: CaseProps) => {
-  const {id} = props;
+const CaseStudy = (props: {}) => {
+  let { id } = useParams();
 
   const caseStudy = TestCaseStudy;
 
   const [step, setStep] = useState(caseStudy.currentStep);
-  const [exercise, setExercise] = useState<Exercise | null>(null);
-  
+  const [exerciseIndex, setExerciseIndex] = useState<number>(0);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [institution, setInstitution] = useState<number | undefined>(1);
+  const [institution, setInstitution] = useState<string | undefined>();
 
   const [answer, setAnswer] = useState<string>();
 
   const [index, setIndex] = useState(0);
   const length = 3;
 
+  const exercise = useMemo(() => {
+    return institution
+      ? caseStudy.case?.exercises?.[step]?.[institution]?.[exerciseIndex]
+      : undefined;
+  }, [caseStudy.case?.exercises, exerciseIndex, institution, step]);
+
   const springRef = useSpringRef();
-  const [springs, api] = useSprings(
+  const [springs] = useSprings(
     13,
     (i) => ({
       ref: springRef,
@@ -49,6 +61,7 @@ const CaseStudy = (props: CaseProps) => {
     }),
     []
   );
+
   useChain([springRef], [], 1500);
 
   const handleOk = useCallback(() => {
@@ -72,11 +85,11 @@ const CaseStudy = (props: CaseProps) => {
   }, [index]);
 
   const onChange = useCallback((e: any) => {
-    setAnswer(e.target.value)
-  }, [])
+    setAnswer(e.target.value);
+  }, []);
 
   useEffect(() => {
-    if (step === 0) {
+    if (step === CaseStep.Survey) {
       setIsModalOpen(true);
     }
   }, [step]);
@@ -102,7 +115,10 @@ const CaseStudy = (props: CaseProps) => {
           />
           {springs.map((props, index) => (
             <animated.div key={index} style={props}>
-              <div className={`buildings building_${index}`} onClick={() => setInstitution(index)}>
+              <div
+                className={`buildings building_${index}`}
+                onClick={() => setInstitution(String(index))}
+              >
                 <div className="iconfont" style={{}}>
                   <div className="introduction1" style={{}}>
                     <Badge count={0} showZero>
@@ -163,8 +179,48 @@ const CaseStudy = (props: CaseProps) => {
           bordered={false}
           style={{ width: 200 }}
         >
-          <p>机构1 完成（1/3）</p>
-          <p>机构2 完成（2/3）</p>
+          <Steps
+            direction="vertical"
+            size="small"
+            current={1}
+            items={[
+              {
+                title: "观看案例",
+                description: (
+                  <>
+                    <p>机构（1/3）</p>
+                  </>
+                ),
+              },
+              {
+                title: "调研环节",
+                description: (
+                  <>
+                    <p>机构（1/3）</p>
+                  </>
+                ),
+              },
+              {
+                title: "策划环节",
+                description: (
+                  <>
+                    <p>机构1（1/3）</p>
+                  </>
+                ),
+              },
+              {
+                title: "执行环节",
+                description: (
+                  <>
+                    <p>机构1（1/3）</p>
+                  </>
+                ),
+              },
+              {
+                title: "评估环节",
+              },
+            ]}
+          />
         </Card>
       </div>
     </div>
