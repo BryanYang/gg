@@ -4,11 +4,16 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter, RouterProvider } from "react-router-dom";
+const bcrypt = require('./utils/bcrypt');
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
-
+// var salt = bcrypt.genSaltSync(10);
+// var hash = bcrypt.hashSync("B4c0/\/", salt);
+// console.log(hash)
+// const s = bcrypt.compareSync("B4c0/\/", hash); // true
+// console.log(s)
 root.render(
   <BrowserRouter >
     <App />
