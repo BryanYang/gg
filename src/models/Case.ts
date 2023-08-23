@@ -139,7 +139,7 @@ export class CaseStudy implements CaseStudyInterface {
 
 export const TestCaseStudy: CaseStudy = new CaseStudy({
   case: TestCase,
-  user: { name: 'yang', id: '1'} as User,
+  user: { username: 'yang', id: '1'} as User,
   currentStep: CaseStep.Execute,
   answer: {},
 });
