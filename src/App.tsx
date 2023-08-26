@@ -15,7 +15,7 @@ import {
   QuestionCircleOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { useCallback, useLayoutEffect, useState } from "react";
 import { UserOutlined } from "@ant-design/icons";
 import { Content, Header } from "antd/es/layout/layout";
 import {
@@ -34,6 +34,8 @@ import Help from "./pages/students/Help";
 import Profile from "./pages/students/Profile";
 import CaseList from "./pages/students/CaseList";
 import Case from "./pages/students/Case";
+import { useUser, withUser } from "./hooks/UserContext";
+import { withMessage } from "./hooks/MessageContext";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -52,10 +54,15 @@ const contentStyle: React.CSSProperties = {
 const App = (): JSX.Element => {
   const isMobile = useIsMobile();
   const [current, setCurrent] = useState("");
-
   const handleClick = (e: any) => {
     console.log("click ", e);
   };
+
+  const { user } = useUser();
+  const logout = useCallback(() => {
+    sessionStorage.removeItem("access_token");
+    window.location.reload();
+  }, []);
 
   return (
     <Layout className="layout">
@@ -111,8 +118,15 @@ const App = (): JSX.Element => {
                     style={{ backgroundColor: "#87d068" }}
                     icon={<UserOutlined />}
                   />
-                  &nbsp;刘同学
+                  &nbsp; {user.username}
                 </Link>
+              </Menu.Item>
+              <Menu.Item
+                key="logout"
+                onClick={logout}
+                style={{ float: "right" }}
+              >
+                登出
               </Menu.Item>
             </Menu>
           </Col>
@@ -134,4 +148,4 @@ const App = (): JSX.Element => {
   );
 };
 
-export default App;
+export default withMessage(withUser(App));

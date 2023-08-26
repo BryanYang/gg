@@ -1,22 +1,39 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
+import axios from "axios";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { BrowserRouter, RouterProvider } from "react-router-dom";
-const bcrypt = require('./utils/bcrypt');
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Login from "./pages/Login";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
-// var salt = bcrypt.genSaltSync(10);
-// var hash = bcrypt.hashSync("B4c0/\/", salt);
-// console.log(hash)
-// const s = bcrypt.compareSync("B4c0/\/", hash); // true
-// console.log(s)
+
+// 从 Session Storage 中获取 access_token
+const accessToken = sessionStorage.getItem("access_token");
+
+// 设置默认的请求头，将 access_token 作为 Bearer Token 传递
+axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+if (
+  !sessionStorage.getItem("access_token") &&
+  !window.location.pathname.startsWith("/login")
+) {
+  window.location.replace("/login");
+} else if (
+  sessionStorage.getItem("access_token") &&
+  window.location.pathname.startsWith("/login")
+) {
+  window.location.replace("/");
+}
+
 root.render(
-  <BrowserRouter >
-    <App />
+  <BrowserRouter>
+    <Routes>
+      <Route path="*" element={<App />} />
+      <Route path="/login" element={<Login />} />
+    </Routes>
   </BrowserRouter>
 );
 
