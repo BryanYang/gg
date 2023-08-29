@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import noop from "lodash/noop";
 import { User } from "../models/User";
-import axios from "axios";
-import { logout } from "../api/user";
+import { getProfile, logout } from "../api/user";
 
 // 创建用户上下文
 const UserContext = createContext<{
@@ -19,13 +18,15 @@ export function withUser(Com: React.FC) {
     const [user, setUser] = useState({} as User);
 
     useEffect(() => {
-      axios.get("/users/profile").then((res) => {
-        if (res?.data) {
-          setUser(res.data);
-        }
-      }).catch(e => {
-        logout();
-      });
+      getProfile()
+        .then((res) => {
+          if (res?.data) {
+            setUser(res.data);
+          }
+        })
+        .catch((e) => {
+          logout();
+        });
     }, []);
 
     return (

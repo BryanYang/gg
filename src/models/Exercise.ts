@@ -1,3 +1,5 @@
+import { CaseStep } from "./Case";
+import { Institution } from "./Institution";
 
 
 
@@ -7,9 +9,11 @@ export interface ExerciseOption {
 }
 
 export interface Exercise {
-  id: string | number;
+  id: number;
   title: string;
   score: number;
   options: ExerciseOption[];
   answerIDs: string[];
+  step: CaseStep;
+  institution: Institution;
 }

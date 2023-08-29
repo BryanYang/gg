@@ -1,18 +1,10 @@
 import { AntDesignOutlined } from "@ant-design/icons";
-import {
-  Col,
-  Row,
-  Avatar,
-  Form,
-  Input,
-  Button,
-  Divider,
-  Alert,
-} from "antd";
+import { Col, Row, Avatar, Form, Input, Button, Divider, Alert } from "antd";
 import { Content } from "antd/es/layout/layout";
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { useMessage } from "../../hooks/MessageContext";
+import { getProfile } from "../../api/user";
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
@@ -53,7 +45,7 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    axios.get("/users/profile").then((res) => {
+    getProfile().then((res) => {
       if (res?.data) {
         console.log(res.data);
         setUser(res.data);

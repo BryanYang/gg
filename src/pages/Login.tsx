@@ -1,5 +1,5 @@
 import { Form, Input, Button, Alert } from "antd";
-import axios from "axios";
+import axios from '../utils/axios';
 
 import "./Login.css";
 import { useCallback, useState } from "react";

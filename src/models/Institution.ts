@@ -1,6 +1,8 @@
 
 
 export interface Institution {
-  id: string;
-  title: string;
+  id: number;
+  name: string;
+  orderNo: number,
+  
 }
