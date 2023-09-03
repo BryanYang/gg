@@ -73,8 +73,9 @@
   },
   "scripts": {
     "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
-    "test": "node scripts/test.js"
+    "build": "GENERATE_SOURCEMAP=false node scripts/build.js",
+    "test": "node scripts/test.js",
+    "pub": "./scripts/pub.sh"
   },
   "proxy": "http://localhost:3000",
   "eslintConfig": {
