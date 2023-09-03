@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Menu, List, Avatar, Space, Radio } from "antd";
-import { getExperiments } from "../../api"; // 这里使用了一个假的API请求函数getExperiments
+import { useCallback, useState } from "react";
+import { Button, Menu, List, Avatar, Space, Radio } from "antd";
 import { Content } from "antd/es/layout/layout";
+import { getMessages, deleteMessage } from "../../api/message";
+import useLoadData from "../../hooks/useLoadData";
+import { Message } from "../../models/Message";
 
 const dataMock = Array.from({ length: 23 }).map((_, i) => ({
   href: "https://ant.design",
@@ -12,31 +14,22 @@ const dataMock = Array.from({ length: 23 }).map((_, i) => ({
 }));
 
 const Messages = () => {
-  const [data, setData] = useState<any>([]);
   const [unRead, setUnRead] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
+  // const [pagination, setPagination] = useState({
+  //   current: 1,
+  //   pageSize: 10,
+  //   total: 0,
+  // });
+
+  const { data, loading, error } = useLoadData<Message[]>(getMessages);
+
+  const onDelete = useCallback((id: number) => {
+    deleteMessage(id);
+  }, []);
 
   const handleTableChange = (pagination: any) => {
-    setPagination(pagination);
+    // setPagination(pagination);
   };
-
-  useEffect(() => {
-    setLoading(true);
-    getExperiments(1, 20)
-      .then((response: any) => {
-        setData(dataMock);
-        setPagination((pre) => ({
-          ...pre,
-          total: response.total,
-        }));
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   return (
     <Content style={{ width: 1440, margin: "0 auto" }}>
@@ -62,13 +55,13 @@ const Messages = () => {
           <List
             itemLayout="vertical"
             size="large"
-            pagination={{
-              onChange: (page) => {
-                console.log(page);
-              },
-              pageSize: 3,
-            }}
-            dataSource={data}
+            // pagination={{
+            //   onChange: (page) => {
+            //     console.log(page);
+            //   },
+            //   pageSize: 3,
+            // }}
+            dataSource={data || []}
             footer={
               <div>
                 <b>公共关系仿真平台</b>
@@ -79,7 +72,7 @@ const Messages = () => {
                 key={item.title}
                 actions={[]}
                 extra={
-                  <Button danger type="text">
+                  <Button onClick={() => { onDelete(item.id) }} danger type="text">
                     删除
                   </Button>
                 }

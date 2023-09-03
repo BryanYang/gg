@@ -1,4 +1,4 @@
-import axios from '../utils/axios';
+import axios from "../utils/axios";
 
 import { CaseStudy } from "../models/Case";
 import { UserAnswer } from "../models/userAnswer";
@@ -16,5 +16,7 @@ export const updateStudy = (data: Partial<CaseStudy>) =>
 export const createAnswer = (data: Partial<UserAnswer>) =>
   axios.put(`/cases/study/answer`, data);
 
-  export const getAnswer = (studyID: number) =>
+export const getAnswer = (studyID: number) =>
   axios.get(`/cases/study/${studyID}/answer`);
+
+export const getCaseStudies = () => axios.get(`/cases/study/list`);
