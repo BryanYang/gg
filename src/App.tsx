@@ -14,6 +14,7 @@ import {
   BellOutlined,
   QuestionCircleOutlined,
   TeamOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
 import React, { useCallback, useLayoutEffect, useState } from "react";
 import { UserOutlined } from "@ant-design/icons";
@@ -36,6 +37,7 @@ import CaseList from "./pages/students/CaseList";
 import Case from "./pages/students/Case";
 import { useUser, withUser } from "./hooks/UserContext";
 import { withMessage } from "./hooks/MessageContext";
+import { withModal } from "./hooks/ModalContext";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -55,7 +57,6 @@ const App = (): JSX.Element => {
   const isMobile = useIsMobile();
   const [current, setCurrent] = useState("");
   const handleClick = (e: any) => {
-    console.log("click ", e);
   };
 
   const { user } = useUser();
@@ -69,8 +70,11 @@ const App = (): JSX.Element => {
       <Header style={headerStyle}>
         <Row>
           {!isMobile && (
-            <Col flex="200px">
-              <Link to="/">公共关系仿真实验平台</Link>
+            <Col flex="220px">
+              <Link to="/" style={{ color: "white", fontSize: 18 }}>
+                <HomeOutlined /> &nbsp;
+                <span>公共关系仿真实验平台</span>
+              </Link>
             </Col>
           )}
           <Col flex="auto">
@@ -101,7 +105,7 @@ const App = (): JSX.Element => {
                 icon={<BellOutlined />}
               >
                 <Link to="/messages">通知</Link>
-                <Badge count={5}>
+                <Badge count={0}>
                   <span style={{ color: "white" }}>&nbsp;&nbsp;</span>
                 </Badge>
               </Menu.Item>
@@ -148,4 +152,4 @@ const App = (): JSX.Element => {
   );
 };
 
-export default withMessage(withUser(App));
+export default withModal(withMessage(withUser(App)));

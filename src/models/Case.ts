@@ -13,7 +13,7 @@ export const CaseStepTitle = {
   [CaseStep.Video]: "观看视频",
   [CaseStep.Survey]: "调研环节",
   [CaseStep.Design]: "策划环节",
-  [CaseStep.Execute]: "执行缓解",
+  [CaseStep.Execute]: "执行环节",
   [CaseStep.Report]: "评估环节",
   [CaseStep.Finish]: "完成",
 };

@@ -16,6 +16,10 @@ export const updateStudy = (data: Partial<CaseStudy>) =>
 export const createAnswer = (data: Partial<UserAnswer>) =>
   axios.put(`/cases/study/answer`, data);
 
+  export const removeAnswer = (studyId: number) =>
+  axios.delete(`/cases/study/${studyId}`);
+
+
 export const getAnswer = (studyID: number) =>
   axios.get(`/cases/study/${studyID}/answer`);
 

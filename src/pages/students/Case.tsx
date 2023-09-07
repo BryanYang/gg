@@ -34,11 +34,23 @@ import filter from "lodash/filter";
 import { Institution } from "../../models/Institution";
 import { Exercise } from "../../models/Exercise";
 import map from "lodash/map";
-import { compact, countBy, forEach, forIn, some, uniqBy } from "lodash";
+import {
+  compact,
+  countBy,
+  every,
+  forEach,
+  forIn,
+  includes,
+  some,
+  uniqBy,
+} from "lodash";
 import { useUser } from "../../hooks/UserContext";
 import { useMessage } from "../../hooks/MessageContext";
 import TextArea from "antd/es/input/TextArea";
 import { UserAnswer } from "../../models/userAnswer";
+import { ShareAltOutlined } from "@ant-design/icons";
+import ClipboardJS from "clipboard";
+import Fireworks from "../../icons/Fireworks";
 
 const CaseStudyScreen = (props: {}) => {
   let { id } = useParams();
@@ -52,6 +64,7 @@ const CaseStudyScreen = (props: {}) => {
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState("");
+  const currentStep = useRef(0);
 
   const insExercisesMap = useMemo(() => {
     const res: Record<number, Exercise[]> = {};
@@ -83,11 +96,23 @@ const CaseStudyScreen = (props: {}) => {
   }, [id, userContext.user.id]);
 
   const onStepChange = useCallback((v: number) => {
-    setStep(v);
+    setStep(Math.min(v, currentStep.current));
   }, []);
 
   const { data: caseData } = useLoadData<Case>(loadCase);
   const { data: caseStudy } = useLoadData<CaseStudy>(loadStudy);
+
+  useEffect(() => {
+    const clipboard = new ClipboardJS(".copy-btn");
+    clipboard.on("success", function (e) {
+      alert("分享链接已经复制到您的剪贴板，快去分享吧～");
+      e.clearSelection();
+    });
+
+    return () => {
+      clipboard.destroy();
+    };
+  }, []);
 
   useEffect(() => {
     if (caseStudy?.id) {
@@ -105,6 +130,7 @@ const CaseStudyScreen = (props: {}) => {
 
   useEffect(() => {
     if (caseStudy) {
+      currentStep.current = caseStudy?.currentStep;
       setStep(caseStudy?.currentStep);
     }
   }, [caseStudy]);
@@ -159,7 +185,11 @@ const CaseStudyScreen = (props: {}) => {
         setExerciseIndex(0);
         setInstitutionID(undefined);
         // submit
-        if (Object.keys(answers).length === exercises.length) {
+        if (
+          every(exercises, (ex) =>
+            includes(Object.keys(answers), String(ex.id))
+          )
+        ) {
           if (step === CaseStep.Report) {
             // 完成内容，跳转去我的实验
           } else {
@@ -169,6 +199,7 @@ const CaseStudyScreen = (props: {}) => {
               id: caseStudy?.id,
               currentStep: step! + 1,
             });
+            currentStep.current = step! + 1;
             messageApi.open({
               type: "success",
               content: `进入${CaseStepTitle[(step! + 1) as CaseStep]}`,
@@ -184,7 +215,7 @@ const CaseStudyScreen = (props: {}) => {
     caseStudy,
     exercise,
     exerciseIndex,
-    exercises.length,
+    exercises,
     insExercisesMap,
     institutionID,
     messageApi,
@@ -250,7 +281,7 @@ const CaseStudyScreen = (props: {}) => {
             title: (
               <span
                 onClick={() => {
-                  if (ste === CaseStep.Report) {
+                  if (ste === CaseStep.Report && currentStep.current >= 4) {
                     setShowSummary(true);
                   }
                   if (ste === CaseStep.Video) {
@@ -406,7 +437,9 @@ const CaseStudyScreen = (props: {}) => {
             currentStep: CaseStep.Finish,
             summary,
           });
-          navigate("/exercises");
+          setShowSummary(false);
+          setStep(CaseStep.Finish);
+          // navigate("/exercises");
         }}
       >
         <TextArea
@@ -417,11 +450,51 @@ const CaseStudyScreen = (props: {}) => {
           maxLength={600}
         />
       </Modal>
+      <Modal
+        open={step === CaseStep.Finish}
+        title="🎉🎉🎉 恭喜你，完成！"
+        okText="查看分数"
+        cancelButtonProps={{ hidden: true }}
+        onOk={() => {
+          navigate("/exercises");
+        }}
+        closable={false}
+      >
+        <div className="trophy" style={{ fontSize: 100, textAlign: "center" }}>
+          🏆
+        </div>
+        <div className="certificate-content">
+          <span>
+            优秀的 <strong>{userContext.user.username}</strong>:
+          </span>
+          <p>
+            您已经完成《{caseData?.title}》
+            的练习，接下来，你可以去我的实验中心查看分数，或者可以分享更多的小伙伴来PK
+            这道题～
+          </p>
+          <Button
+            data-clipboard-text={`我刚在这里完成了一项测试，你也来试试吧！➡️${
+              window.location.protocol +
+              "//" +
+              window.location.host +
+              "/case/" +
+              caseData?.id
+            }`}
+            className="copy-btn"
+            type="dashed"
+            size="large"
+          >
+            点我分享
+            <ShareAltOutlined />
+          </Button>
+        </div>
+        <Fireworks />
+      </Modal>
       <div className="task-detail">
         <Card
           title={
             <Progress
-              percent={Math.max((caseStudy?.currentStep || 0), Number(step)) * 20}
+              percent={Math.max(caseStudy?.currentStep || 0, Number(step)) * 20}
               steps={stepItems.length}
             />
           }

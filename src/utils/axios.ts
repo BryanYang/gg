@@ -8,7 +8,6 @@ instance.interceptors.request.use(
   (config) => {
     // 从 Session Storage 中获取 access_token
     const accessToken = sessionStorage.getItem("access_token");
-    console.log(accessToken);
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }

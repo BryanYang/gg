@@ -4,14 +4,7 @@ import { Content } from "antd/es/layout/layout";
 import { getMessages, deleteMessage } from "../../api/message";
 import useLoadData from "../../hooks/useLoadData";
 import { Message } from "../../models/Message";
-
-const dataMock = Array.from({ length: 23 }).map((_, i) => ({
-  href: "https://ant.design",
-  title: `您有一个实验未完成`,
-  avatar: `https://xsgames.co/randomusers/avatar.php?g=pixel&key=${i}`,
-  description: "开始时间 2023/05/29 11:11:00",
-  content: "实验名称",
-}));
+import { PandaSvg } from "../../icons/panda";
 
 const Messages = () => {
   const [unRead, setUnRead] = useState(false);
@@ -72,13 +65,19 @@ const Messages = () => {
                 key={item.title}
                 actions={[]}
                 extra={
-                  <Button onClick={() => { onDelete(item.id) }} danger type="text">
+                  <Button
+                    onClick={() => {
+                      onDelete(item.id);
+                    }}
+                    danger
+                    type="text"
+                  >
                     删除
                   </Button>
                 }
               >
                 <List.Item.Meta
-                  avatar={<Avatar src={item.avatar} />}
+                  avatar={<Avatar src={item.avatar || <PandaSvg />} />}
                   title={<a href={item.href}>{item.title}</a>}
                   description={item.description}
                 />
