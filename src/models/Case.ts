@@ -1,5 +1,4 @@
 import { Exercise } from "./Exercise";
-import { User } from "./User";
 export enum CaseStep {
   Video = 0,
   Survey = 1,
@@ -18,66 +17,6 @@ export const CaseStepTitle = {
   [CaseStep.Finish]: "完成",
 };
 
-// export const TestCase: Case = {
-//   id: "1",
-//   title: "",
-//   description: "农夫山泉",
-//   videoUrl: "http://sss.com",
-//   link: "has",
-//   studyCount: 0,
-//   createdAt: new Date().getTime(),
-//   exercises: {
-//     [CaseStep.Survey]: {
-//       '1': [
-//         {
-//           id: 1,
-//           title: "题目1",
-//           score: 40,
-//           options: [
-//             { id: 1, description: "答案一" },
-//             { id: 2, description: "答案一" },
-//             { id: 3, description: "答案一" },
-//             { id: 4, description: "答案一" },
-//           ],
-//           answerIDs: [],
-//         },
-//       ]
-//     },
-//     [CaseStep.Design]: {
-//       '2': [
-//         {
-//           id: 2,
-//           title: "题目2",
-//           score: 30,
-//           options: [
-//             { id: 1, description: "答案一" },
-//             { id: 2, description: "答案一" },
-//             { id: 3, description: "答案一" },
-//             { id: 4, description: "答案一" },
-//           ],
-//           answerIDs: [],
-//         },
-//       ]
-//     },
-//     [CaseStep.Execute]: {
-//       '3': [
-//         {
-//           id: 3,
-//           title: "题目3",
-//           score: 30,
-//           options: [
-//             { id: 1, description: "答案一" },
-//             { id: 2, description: "答案一" },
-//             { id: 3, description: "答案一" },
-//             { id: 4, description: "答案一" },
-//           ],
-//           answerIDs: [],
-//         },
-//       ]
-//     },
-//   },
-// };
-
 export interface Case {
   id: number;
   title: string;
@@ -89,11 +28,7 @@ export interface Case {
   isDeleted?: boolean;
 
   studyCount: number;
-  // {
-  //   [CaseStep.Survey]: {
-  //     [institutionID]: [...]
-  //   }
-  // }
+
   exercises: Exercise[];
 }
 
@@ -112,10 +47,3 @@ export interface CaseStudy {
   createdAt?: string;
   updatedAt?: string;
 }
-
-// export const TestCaseStudy: CaseStudy = new CaseStudy({
-//   case: TestCase,
-//   user: { username: 'yang', id: '1'} as User,
-//   currentStep: CaseStep.Execute,
-//   answer: {},
-// });

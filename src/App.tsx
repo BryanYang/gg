@@ -38,6 +38,7 @@ import Case from "./pages/students/Case";
 import { useUser, withUser } from "./hooks/UserContext";
 import { withMessage } from "./hooks/MessageContext";
 import { withModal } from "./hooks/ModalContext";
+import ClassList from "./pages/teacher/ClassList";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -56,8 +57,7 @@ const contentStyle: React.CSSProperties = {
 const App = (): JSX.Element => {
   const isMobile = useIsMobile();
   const [current, setCurrent] = useState("");
-  const handleClick = (e: any) => {
-  };
+  const handleClick = (e: any) => {};
 
   const { user } = useUser();
   const logout = useCallback(() => {
@@ -74,6 +74,16 @@ const App = (): JSX.Element => {
               <Link to="/" style={{ color: "white", fontSize: 18 }}>
                 <HomeOutlined /> &nbsp;
                 <span>公共关系仿真实验平台</span>
+                <span
+                  style={{
+                    color: "gray",
+                    fontSize: 12,
+                    position: "absolute",
+                    top: 6,
+                  }}
+                >
+                  0.01
+                </span>
               </Link>
             </Col>
           )}
@@ -146,6 +156,7 @@ const App = (): JSX.Element => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/caselist" element={<CaseList />} />
           <Route path="/case/:id" element={<Case />} />
+          <Route path="/classlist" element={<ClassList />} />
         </Routes>
       </Content>
     </Layout>

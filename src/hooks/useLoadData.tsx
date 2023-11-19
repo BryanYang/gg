@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 function useLoadData<T>(apiFunction: () => Promise<any>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+  const [fresh, setFresh] = useState(0);
 
   useEffect(() => {
     async function fetchData() {
@@ -20,9 +21,13 @@ function useLoadData<T>(apiFunction: () => Promise<any>) {
     }
 
     fetchData();
-  }, [apiFunction]); // 当 apiFunction 发生变化时重新加载数据
+  }, [apiFunction, fresh]); // 当 apiFunction 发生变化时重新加载数据
 
-  return { data, loading, error };
+  const refresh = useCallback(() => {
+    setFresh((i) => i + 1);
+  }, [])
+
+  return { data, loading, error, refresh };
 }
 
 export default useLoadData;
