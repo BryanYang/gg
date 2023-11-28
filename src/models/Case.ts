@@ -1,4 +1,5 @@
 import { Exercise } from "./Exercise";
+import { Institution } from "./Institution";
 export enum CaseStep {
   Video = 0,
   Survey = 1,
@@ -21,6 +22,7 @@ export interface Case {
   id: number;
   title: string;
   description: string;
+  types?: string[];
   pic?: string;
   videoUrl?: string;
   link?: string;
@@ -30,6 +32,7 @@ export interface Case {
   studyCount: number;
 
   exercises: Exercise[];
+  institutions?: Institution[];
 }
 
 export interface CaseStudy {

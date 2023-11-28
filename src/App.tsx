@@ -16,7 +16,12 @@ import {
   TeamOutlined,
   HomeOutlined,
 } from "@ant-design/icons";
-import React, { useCallback, useLayoutEffect, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import { UserOutlined } from "@ant-design/icons";
 import { Content, Header } from "antd/es/layout/layout";
 import {
@@ -39,6 +44,7 @@ import { useUser, withUser } from "./hooks/UserContext";
 import { withMessage } from "./hooks/MessageContext";
 import { withModal } from "./hooks/ModalContext";
 import ClassList from "./pages/teacher/ClassList";
+import Custom from "./pages/common/Custom";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -64,6 +70,16 @@ const App = (): JSX.Element => {
     sessionStorage.removeItem("access_token");
     window.location.reload();
   }, []);
+
+  const [isTeacherMode, setIsTeacherMode] = useState<boolean | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    if (isTeacherMode === undefined && user.isTeacher !== undefined) {
+      setIsTeacherMode(user.isTeacher);
+    }
+  }, [isTeacherMode, user.isTeacher]);
 
   return (
     <Layout className="layout">
@@ -95,13 +111,28 @@ const App = (): JSX.Element => {
               mode="horizontal"
               style={{ float: "right" }}
             >
-              <Menu.Item
-                key="mail"
-                style={{ float: "right" }}
-                icon={<MailOutlined />}
-              >
-                <Link to="/exercises">我的实验</Link>
-              </Menu.Item>
+              {isTeacherMode ? (
+                <>
+                  <Menu.Item
+                    key="mail"
+                    style={{ float: "right" }}
+                    icon={<MailOutlined />}
+                  >
+                    <Link to="/classlist">班级管理</Link>
+                  </Menu.Item>
+                </>
+              ) : (
+                <>
+                  <Menu.Item
+                    key="mail"
+                    style={{ float: "right" }}
+                    icon={<MailOutlined />}
+                  >
+                    <Link to="/exercises">我的实验</Link>
+                  </Menu.Item>
+                </>
+              )}
+
               <Menu.Item
                 key="social"
                 style={{ float: "left" }}
@@ -157,6 +188,8 @@ const App = (): JSX.Element => {
           <Route path="/caselist" element={<CaseList />} />
           <Route path="/case/:id" element={<Case />} />
           <Route path="/classlist" element={<ClassList />} />
+          <Route path="/case-edit/:id" element={<Custom />} />
+          <Route path="/case-edit" element={<Custom />} />
         </Routes>
       </Content>
     </Layout>
