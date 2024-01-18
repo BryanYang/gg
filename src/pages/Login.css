@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-image: url('https://gw.alipayobjects.com/mdn/rms_08e378/afts/img/A*6d50SboraPIAAAAAAAAAAAAAARQnAQ'); /* 替换为背景图路径 */
+  background-image: url('https://pic.baike.soso.com/ugc/baikepic2/0/ori-20230531145251-60083371_jpeg_600_400_316804.jpg/800'); /* 替换为背景图路径 */
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -14,4 +14,9 @@
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   width: 400px;
+}
+
+.login-header {
+  background-image: url('https://www.gccrcw.com/uploads/allimg/190422/1-1Z4221536160-L.jpg'); /* 替换为背景图路径 */
+
 }

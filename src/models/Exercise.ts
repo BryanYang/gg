@@ -15,6 +15,7 @@ export interface Exercise {
   type: string;
   options: ExerciseOption[];
   answerIDs: string[];
+  answerNos?: string[];
   analysis?: string;
   tip?: string;
   step: CaseStep;

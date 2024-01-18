@@ -14,7 +14,7 @@ const Messages = () => {
   //   total: 0,
   // });
 
-  const { data, loading, error } = useLoadData<Message[]>(getMessages);
+  const { data, loading, error } = useLoadData(getMessages);
 
   const onDelete = useCallback((id: number) => {
     deleteMessage(id);

@@ -5,8 +5,7 @@ export enum CaseStep {
   Survey = 1,
   Design = 2,
   Execute = 3,
-  Report = 4,
-  Finish = 5,
+  Finish = 4,
 }
 
 export const CaseStepTitle = {
@@ -14,7 +13,6 @@ export const CaseStepTitle = {
   [CaseStep.Survey]: "调研环节",
   [CaseStep.Design]: "策划环节",
   [CaseStep.Execute]: "执行环节",
-  [CaseStep.Report]: "评估环节",
   [CaseStep.Finish]: "完成",
 };
 
@@ -30,7 +28,7 @@ export interface Case {
   isDeleted?: boolean;
 
   studyCount: number;
-
+  status: number;
   exercises: Exercise[];
   institutions?: Institution[];
 }
@@ -43,6 +41,7 @@ export interface CaseStudy {
   currentExerciseID?: string;
   // key: exerciseID, value: ExerciseOptionID
   answer: Record<string, string[]>;
+  endDate?: Date,
   score?: number;
   state: number;
   summary?: string;

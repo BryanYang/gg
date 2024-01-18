@@ -1,7 +1,10 @@
 import {
+  Alert,
   Badge,
   Button,
   Card,
+  Checkbox,
+  Input,
   Modal,
   Progress,
   Radio,
@@ -25,6 +28,7 @@ import { useParams } from "react-router-dom";
 import useLoadData from "../../hooks/useLoadData";
 import {
   createAnswer,
+  createCase,
   getAnswer,
   getCase,
   getCaseStudy,
@@ -46,7 +50,6 @@ import {
 } from "lodash";
 import { useUser } from "../../hooks/UserContext";
 import { useMessage } from "../../hooks/MessageContext";
-import TextArea from "antd/es/input/TextArea";
 import { UserAnswer } from "../../models/userAnswer";
 import { ShareAltOutlined } from "@ant-design/icons";
 import ClipboardJS from "clipboard";
@@ -62,8 +65,6 @@ const CaseStudyScreen = (props: {}) => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
-  const [showSummary, setShowSummary] = useState(false);
-  const [summary, setSummary] = useState("");
   const currentStep = useRef(0);
 
   const insExercisesMap = useMemo(() => {
@@ -99,8 +100,8 @@ const CaseStudyScreen = (props: {}) => {
     setStep(Math.min(v, currentStep.current));
   }, []);
 
-  const { data: caseData } = useLoadData<Case>(loadCase);
-  const { data: caseStudy } = useLoadData<CaseStudy>(loadStudy);
+  const { data: caseData, refresh } = useLoadData(loadCase);
+  const { data: caseStudy, refresh: refreshStudy } = useLoadData(loadStudy);
 
   useEffect(() => {
     const clipboard = new ClipboardJS(".copy-btn");
@@ -124,7 +125,6 @@ const CaseStudyScreen = (props: {}) => {
         });
         setAnswers(answerMap);
       });
-      setSummary(caseStudy.summary || "");
     }
   }, [caseStudy]);
 
@@ -164,14 +164,19 @@ const CaseStudyScreen = (props: {}) => {
     setIsModalOpen(false);
   }, [caseData?.videoUrl]);
 
-  const handleOk = useCallback(() => {
+  const handleOk = useCallback(async () => {
     handleCancel();
-    setStep(CaseStep.Survey);
-    updateStudy({
+    await updateStudy({
       id: caseStudy?.id,
+      caseID: caseData?.id,
       currentStep: CaseStep.Survey,
     });
-  }, [caseStudy?.id, handleCancel]);
+    // 创建后更新study
+    if (!caseStudy?.id) {
+      await refreshStudy();
+    }
+    setStep(CaseStep.Survey);
+  }, [caseData?.id, caseStudy?.id, handleCancel, refreshStudy]);
 
   const onContinue = useCallback(async () => {
     if (answers[exercise!.id]) {
@@ -190,21 +195,27 @@ const CaseStudyScreen = (props: {}) => {
             includes(Object.keys(answers), String(ex.id))
           )
         ) {
-          if (step === CaseStep.Report) {
-            // 完成内容，跳转去我的实验
-          } else {
-            // 下一个 Step
-            setStep(step! + 1);
+          if (step! + 1 === CaseStep.Finish) {
+            // 完成跳转到我的学习
             await updateStudy({
               id: caseStudy?.id,
-              currentStep: step! + 1,
+              state: 1,
+              currentStep: CaseStep.Finish,
             });
-            currentStep.current = step! + 1;
-            messageApi.open({
-              type: "success",
-              content: `进入${CaseStepTitle[(step! + 1) as CaseStep]}`,
-            });
+            setStep(CaseStep.Finish);
+            return;
           }
+          // 下一个 Step
+          setStep(step! + 1);
+          await updateStudy({
+            id: caseStudy?.id,
+            currentStep: step! + 1,
+          });
+          currentStep.current = step! + 1;
+          messageApi.open({
+            type: "success",
+            content: `进入${CaseStepTitle[(step! + 1) as CaseStep]}`,
+          });
         }
       } else {
         setExerciseIndex(exerciseIndex + 1);
@@ -227,10 +238,10 @@ const CaseStudyScreen = (props: {}) => {
   }, [exerciseIndex]);
 
   const onSelectAnswer = useCallback(
-    (e: any) => {
+    (answerNos: any[]) => {
       setAnswers({
         ...answers,
-        [exercise!.id]: [e.target.value],
+        [exercise!.id]: answerNos,
       });
     },
     [answers, exercise]
@@ -243,20 +254,12 @@ const CaseStudyScreen = (props: {}) => {
       setExercises([]);
     } else {
       const exercises = filter(caseData?.exercises, (ex) => ex.step === step);
-      const ins = uniqBy(
-        map(exercises, (ex: Exercise) => ex.institution),
-        "id"
-      );
+      const s: Institution[] = map(exercises, (ex: Exercise) => ex.institution);
+      const ins = uniqBy(s, "id");
       setInstitutions(ins);
       setExercises(exercises);
     }
   }, [caseData?.exercises, step]);
-
-  useEffect(() => {
-    if (step === CaseStep.Report) {
-      setShowSummary(true);
-    }
-  }, [step]);
 
   const answeredCount = useMemo(() => {
     return countBy(Object.keys(answers), (exID) => {
@@ -281,9 +284,6 @@ const CaseStudyScreen = (props: {}) => {
             title: (
               <span
                 onClick={() => {
-                  if (ste === CaseStep.Report && currentStep.current >= 4) {
-                    setShowSummary(true);
-                  }
                   if (ste === CaseStep.Video) {
                     setIsModalOpen(true);
                   }
@@ -310,8 +310,39 @@ const CaseStudyScreen = (props: {}) => {
     [answeredCount, insExercisesMap, institutions, step]
   );
 
+  const publish = useCallback(async () => {
+    await createCase({
+      ...caseData,
+      status: 1,
+    });
+
+    await refresh();
+    messageApi.success("发布成功");
+  }, [caseData, messageApi, refresh]);
+
   return (
     <div className="case-home">
+      {userContext.user.isTeacher && caseData?.status !== 1 && (
+        <Alert
+          style={{
+            position: "fixed",
+            zIndex: 1,
+            left: "50%",
+            transform: "translateX(-50%)",
+            top: 80,
+            fontSize: 24,
+          }}
+          banner
+          message={
+            <span>
+              当前处于预览状态，对学生不可见&nbsp;&nbsp;{" "}
+              <a onClick={publish}>点击发布</a>
+            </span>
+          }
+          type="warning"
+        />
+      )}
+
       <Draggable
         bounds={{
           left: window.innerWidth - 2049 > 0 ? 0 : window.innerWidth - 2049,
@@ -407,54 +438,47 @@ const CaseStudyScreen = (props: {}) => {
         {exercise && (
           <>
             <h3>{exercise.title}</h3>
-            <Radio.Group
-              onChange={onSelectAnswer}
-              value={answers[exercise!.id]?.[0]}
-            >
-              <Space direction="vertical">
-                {exercise.options.map((op: any) => (
-                  <Radio key={op.id} value={op.id}>
-                    {op.description}
-                  </Radio>
-                ))}
-              </Space>
-            </Radio.Group>
+            {exercise.type === "singleSelect" ? (
+              <Radio.Group
+                onChange={(e) => {
+                  onSelectAnswer([e.target.value]);
+                }}
+                value={answers[exercise!.id]?.[0]}
+              >
+                <Space direction="vertical">
+                  {exercise.options.map((op: any, i) => (
+                    <Radio key={op.id} value={i}>
+                      {op.description}
+                    </Radio>
+                  ))}
+                </Space>
+              </Radio.Group>
+            ) : exercise.type === "multipleSelect" ? (
+              <Checkbox.Group
+                options={exercise.options.map((op: any, i) => ({
+                  label: op.description,
+                  value: i,
+                }))}
+                value={answers[exercise!.id]}
+                onChange={onSelectAnswer}
+              />
+            ) : (
+              <Input.TextArea
+                placeholder="输入你的答案"
+                onChange={(e) => {
+                  onSelectAnswer([e.target.value]);
+                }}
+                value={answers[exercise!.id]?.[0]}
+              />
+            )}
           </>
         )}
-      </Modal>
-      <Modal
-        title="开始评估"
-        open={showSummary}
-        onCancel={() => {
-          setShowSummary(false);
-        }}
-        okText="完成学习"
-        onOk={async () => {
-          // 完成跳转到我的学习
-          await updateStudy({
-            id: caseStudy?.id,
-            state: 1,
-            currentStep: CaseStep.Finish,
-            summary,
-          });
-          setShowSummary(false);
-          setStep(CaseStep.Finish);
-          // navigate("/exercises");
-        }}
-      >
-        <TextArea
-          onChange={(e) => setSummary(e.target.value)}
-          defaultValue={summary}
-          rows={4}
-          placeholder="请输入评估内容"
-          maxLength={600}
-        />
       </Modal>
       <Modal
         open={step === CaseStep.Finish}
         title="🎉🎉🎉 恭喜你，完成！"
         okText="查看分数"
-        cancelButtonProps={{ hidden: true }}
+        cancelButtonProps={{ style: { display: "none" } }}
         onOk={() => {
           navigate("/exercises");
         }}
@@ -463,6 +487,7 @@ const CaseStudyScreen = (props: {}) => {
         <div className="trophy" style={{ fontSize: 100, textAlign: "center" }}>
           🏆
         </div>
+        <Fireworks />
         <div className="certificate-content">
           <span>
             优秀的 <strong>{userContext.user.username}</strong>:
@@ -482,19 +507,21 @@ const CaseStudyScreen = (props: {}) => {
             }`}
             className="copy-btn"
             type="dashed"
+            onClick={() => {
+              console.log(1);
+            }}
             size="large"
           >
             点我分享
             <ShareAltOutlined />
           </Button>
         </div>
-        <Fireworks />
       </Modal>
       <div className="task-detail">
         <Card
           title={
             <Progress
-              percent={Math.max(caseStudy?.currentStep || 0, Number(step)) * 20}
+              percent={Math.max(caseStudy?.currentStep || 0, Number(step)) * 25}
               steps={stepItems.length}
             />
           }

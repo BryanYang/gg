@@ -16,9 +16,10 @@ import {
   Tag,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
+import { useNavigate } from "react-router-dom";
 import MenuItem from "antd/es/menu/MenuItem";
 import map from "lodash/map";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Exercise } from "../../models/Exercise";
 import {
   MinusCircleOutlined,
@@ -32,10 +33,12 @@ import {
   createCase,
   createCaseIns,
   createExercise,
+  deleteExercise,
   getCase,
 } from "../../api/case";
 import useLoadData from "../../hooks/useLoadData";
 import { useParams } from "react-router-dom";
+import { countBy, filter, find, keys } from "lodash";
 
 type MenuItem = Required<MenuProps>["items"][number];
 const { TextArea } = Input;
@@ -49,12 +52,14 @@ const { CheckableTag } = Tag;
 function getItem(
   label: React.ReactNode,
   key: React.Key,
+  disabled?: boolean,
   icon?: React.ReactNode,
   children?: MenuItem[],
   type?: "group"
 ): MenuItem {
   return {
     key,
+    disabled,
     icon,
     children,
     label,
@@ -62,7 +67,7 @@ function getItem(
   } as MenuItem;
 }
 
-const items: MenuProps["items"] = [
+const items = [
   getItem("案例基本信息", "base"),
   getItem("大厅部门信息", "department"),
   getItem("调研环节题目设置", "research"),
@@ -72,6 +77,7 @@ const items: MenuProps["items"] = [
 ];
 
 const Custom = () => {
+  const navigate = useNavigate();
   const onClick: MenuProps["onClick"] = (e) => {
     const index = items.findIndex((it) => it?.key === e.key);
     setStep(index);
@@ -88,7 +94,7 @@ const Custom = () => {
   const [exerciseModal, setExerciseModal] = useState(false);
   const [form] = Form.useForm();
   const [caseTypes, setCaseTypes] = useState<string[]>([]);
-  const { data, loading, error } = useLoadData<Case | null>(loadCase);
+  const { data, refresh } = useLoadData(loadCase);
 
   const [form3] = Form.useForm();
 
@@ -96,34 +102,45 @@ const Custom = () => {
   const [answers, setAnswers] = useState<string[]>([]);
   const [type, setType] = useState<string>("singleSelect");
 
-  const exerciseList: ExerciseInput[] = [];
+  const [exerciseList, setExerciseList] = useState<Exercise[]>([]);
 
   const exerciseListColumn = [
     {
       title: "序号",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "title",
+      key: "title",
+      width: 60,
+      render: (v: string, r: any, i: number) => i + 1,
     },
     {
       title: "题干",
-      dataIndex: "age",
-      key: "age",
+      dataIndex: "title",
+      key: "title",
     },
     {
       title: "类型",
-      dataIndex: "age",
-      key: "age",
+      dataIndex: "type",
+      key: "type",
+      width: 100,
+      render: (v: string) =>
+        v === "multipleSelect"
+          ? "多选题"
+          : v === "singleSelect"
+          ? "单选题"
+          : "问答题",
     },
     {
       title: "权重分值",
-      dataIndex: "age",
-      key: "age",
+      dataIndex: "score",
+      key: "score",
+      width: 100,
     },
     {
       title: "操作",
       key: "action",
+      width: 130,
       dataIndex: "id",
-      render: (_: string, record: ExerciseInput) => (
+      render: (_: string, record: Exercise) => (
         <Space size="middle">
           <a
             onClick={() => {
@@ -145,6 +162,17 @@ const Custom = () => {
   ];
 
   useEffect(() => {
+    if (step > 1 && step < 5) {
+      const exs = filter(
+        data?.exercises,
+        (ex: Exercise) => ex.step === step - 1
+      );
+      setExerciseList(exs);
+      console.log(exs);
+    }
+  }, [data?.exercises, step]);
+
+  useEffect(() => {
     if (data) {
       form.setFieldsValue(data);
       setCaseTypes(data.types || []);
@@ -159,6 +187,10 @@ const Custom = () => {
     }
   }, [data, form, form3]);
 
+  const isReady = useMemo(() => {
+    return keys(countBy(data?.exercises, "step")).length === 3;
+  }, [data?.exercises]);
+
   const createBase = useCallback(() => {
     form
       .validateFields()
@@ -167,7 +199,9 @@ const Custom = () => {
         createCase(form.getFieldsValue()).then((res) => {
           messageApi.success(id ? "更新成功" : "创建成功");
           setTimeout(() => {
-            window.location.replace("/case-edit/" + res.data.id);
+            if (!id) {
+              window.location.replace("/case-edit/" + res.data.id);
+            }
           }, 1500);
         });
       })
@@ -200,13 +234,25 @@ const Custom = () => {
       });
   }, [data?.institutions, form3, id, messageApi]);
 
-  const editExercise = useCallback((ex: ExerciseInput) => {
-    console.log("edit");
-  }, []);
+  const editExercise = useCallback(
+    (ex: Exercise) => {
+      form2.setFieldsValue(ex);
+      form2.setFieldValue("optionList", ex.options);
+      setType(ex.type);
+      setAnswers(new Array(ex.options.length).fill(""));
+      setExerciseModal(true);
+    },
+    [form2]
+  );
 
-  const destroyExercise = useCallback((ex: ExerciseInput) => {
-    console.log("destroy");
-  }, []);
+  const destroyExercise = useCallback(
+    async (ex: Exercise) => {
+      await deleteExercise(ex.id);
+      await refresh();
+      messageApi.success("删除成功");
+    },
+    [messageApi, refresh]
+  );
 
   const openExercise = useCallback(() => {
     form2.setFieldValue("optionList", ["", ""]);
@@ -220,20 +266,25 @@ const Custom = () => {
     form2
       .validateFields()
       .then((values) => {
+        console.log(values);
         createExercise({
           ...values,
           caseID: id,
           step: step - 1,
+          answerNos: type === "statement" ? [0] : values.answerNos,
         }).then(() => {
-          messageApi.success('添加成功！');
+          messageApi.success(
+            form2.getFieldValue("id") ? "更新成功！" : "添加成功！"
+          );
+          refresh();
           setExerciseModal(false);
           form2.resetFields();
-        })
+        });
       })
       .catch((e) => {
-        messageApi.error('添加失败！');
+        messageApi.error("添加失败！");
       });
-  }, [form2, id, messageApi, step]);
+  }, [form2, id, messageApi, refresh, step, type]);
 
   const exerciseChange = useCallback((values: ExerciseInput) => {
     if (values.type) {
@@ -287,9 +338,16 @@ const Custom = () => {
             onClick={onClick}
             style={{ width: 256, textAlign: "right" }}
             defaultSelectedKeys={["base"]}
-            selectedKeys={[items[step]?.key?.toString() || "base"]}
+            selectedKeys={[items?.[step]?.key?.toString() || "base"]}
             mode="inline"
-            items={items}
+            items={
+              isReady
+                ? items
+                : [
+                    ...items.slice(0, 4),
+                    getItem("预览和发布", "previewAndPublish", true),
+                  ]
+            }
           />
         </Col>
         <Col span="19" style={{ textAlign: "left" }}>
@@ -421,7 +479,7 @@ const Custom = () => {
                 </Row>
                 <Form.Item>
                   <Button type="primary" onClick={createBase}>
-                    下一步
+                    保存
                   </Button>
                 </Form.Item>
               </Form>
@@ -469,10 +527,18 @@ const Custom = () => {
               <h2 style={{ lineHeight: "20px" }}>
                 {CaseStepTitle[(step - 1) as CaseStep]}题目设置
               </h2>
-              <Button type="primary" onClick={openExercise}>
+              <Button
+                type="primary"
+                onClick={openExercise}
+                icon={<PlusOutlined />}
+              >
                 添加习题
               </Button>
-              <Table dataSource={exerciseList} columns={exerciseListColumn} />
+              <Table
+                rowKey={"id"}
+                dataSource={exerciseList}
+                columns={exerciseListColumn}
+              />
               <Button
                 type="primary"
                 onClick={() => {
@@ -486,7 +552,7 @@ const Custom = () => {
                 onCancel={() => setExerciseModal(false)}
                 open={exerciseModal}
                 width={800}
-                okText="下一步"
+                okText="提交"
                 cancelText="取消"
                 onOk={submitExercise}
               >
@@ -496,6 +562,7 @@ const Custom = () => {
                   wrapperCol={{ span: 14 }}
                   onValuesChange={exerciseChange}
                 >
+                  <Form.Item hidden name={"id"}></Form.Item>
                   <Row>
                     <Col span={24}>
                       <Form.Item required name="type" label="选择题型">
@@ -549,20 +616,10 @@ const Custom = () => {
                     <Col span={24}>
                       <Form.Item required name="institutionID" label="选择机构">
                         <Select
-                          options={[
-                            {
-                              value: "0",
-                              label: "机构1",
-                            },
-                            {
-                              value: "1",
-                              label: "机构2",
-                            },
-                            {
-                              value: "2",
-                              label: "机构3",
-                            },
-                          ]}
+                          options={map(data?.institutions, (ins) => ({
+                            value: ins.id,
+                            label: ins.name,
+                          }))}
                         />
                       </Form.Item>
                     </Col>
@@ -688,7 +745,11 @@ const Custom = () => {
                   {type === "statement" && (
                     <Row>
                       <Col span={24}>
-                        <Form.Item required name="title" label="答案">
+                        <Form.Item
+                          required
+                          name={["optionList", 0, "description"]}
+                          label="答案"
+                        >
                           <Input.TextArea maxLength={400} />
                         </Form.Item>
                       </Col>
@@ -719,13 +780,30 @@ const Custom = () => {
               <Result
                 status="success"
                 icon={<SmileOutlined />}
-                title="恭喜你，新的案例已经成功创建！"
-                subTitle="当前案例处于预览模式，对学生不可见，点击预览并发布后，将对学生可见。你随时可在案例列表中预览并发布案例。"
+                title="预览和发布"
+                subTitle={
+                  data?.status === 0
+                    ? "当前案例处于预览模式，对学生不可见，点击预览并发布后，将对学生可见。你随时可在案例列表中预览并发布案例。"
+                    : "当前已经发布上线"
+                }
                 extra={[
-                  <Button type="primary" key="console">
+                  <Button
+                    type="primary"
+                    key="console"
+                    onClick={() => {
+                      navigate(`/case/${data?.id}`);
+                    }}
+                  >
                     去预览
                   </Button>,
-                  <Button key="buy">返回列表</Button>,
+                  <Button
+                    key="buy"
+                    onClick={() => {
+                      navigate("/caselist");
+                    }}
+                  >
+                    返回列表
+                  </Button>,
                 ]}
               />
             </>

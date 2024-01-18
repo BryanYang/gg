@@ -36,13 +36,13 @@ const formItemLayout = {
 };
 
 const ClassList = () => {
-  const { data, loading, error, refresh } = useLoadData<Classes[]>(classList);
+  const { data, loading, error, refresh } = useLoadData(classList);
   const [form] = Form.useForm();
   const [form2] = Form.useForm();
   const [visible, setVisible] = useState(false);
   const [visibleStu, setVisibleStu] = useState<Classes | undefined>(undefined);
   const [editStu, setEditStu] = useState(false);
-  const { data: teachers } = useLoadData<User[]>(getTeachers);
+  const { data: teachers } = useLoadData(getTeachers);
   const [students, setStudents] = useState();
   const messageApi = useMessage();
 

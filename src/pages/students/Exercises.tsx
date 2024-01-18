@@ -167,7 +167,7 @@ const ExperimentTable = () => {
     setPagination(pagination);
   };
 
-  const { data, loading, error } = useLoadData<CaseStudy[]>(getCaseStudies);
+  const { data, loading, error } = useLoadData(getCaseStudies);
 
   return (
     <Content style={{ padding: 60, width: 1440, margin: "0 auto" }}>

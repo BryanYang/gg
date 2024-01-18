@@ -15,6 +15,7 @@ import {
   QuestionCircleOutlined,
   TeamOutlined,
   HomeOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import React, {
   useCallback,
@@ -116,9 +117,16 @@ const App = (): JSX.Element => {
                   <Menu.Item
                     key="mail"
                     style={{ float: "right" }}
-                    icon={<MailOutlined />}
+                    icon={<UserOutlined />}
                   >
                     <Link to="/classlist">班级管理</Link>
+                  </Menu.Item>
+                  <Menu.Item
+                    key="mail"
+                    style={{ float: "right" }}
+                    icon={<BookOutlined />}
+                  >
+                    <Link to="/caselist">案例管理</Link>
                   </Menu.Item>
                 </>
               ) : (

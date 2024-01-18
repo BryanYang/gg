@@ -23,6 +23,7 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      <div className="login-header"></div>
       <div className="login-form">
         <h1>欢迎来到 公共关系系统</h1>
         <Form onFinish={onFinish}>
