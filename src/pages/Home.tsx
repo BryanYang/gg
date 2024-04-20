@@ -36,7 +36,9 @@ const Home = () => {
               案例自定义模式中，你可以将实事热点、新近案例上传至实训软件中，并根据其发展演变的历程设计实训题目，在社区中进行分享讨论。
             </div>
             <Divider />
-            <Button type="primary">上传案例</Button>
+            <Link to="/case-edit">
+              <Button type="primary">上传案例</Button>
+            </Link>
           </Card>
         </Col>
       </Row>

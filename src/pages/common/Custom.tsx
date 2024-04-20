@@ -15,6 +15,7 @@ import {
   Table,
   Tag,
 } from "antd";
+import queryString from "query-string";
 import { Content } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
 import MenuItem from "antd/es/menu/MenuItem";
@@ -90,7 +91,8 @@ const Custom = () => {
       return getCase(Number(id));
     } else return Promise.resolve(null);
   }, [id]);
-  const [step, setStep] = useState(0);
+  const parsed = queryString.parse(window.location.search);
+  const [step, setStep] = useState(Number(parsed.step) || 0);
   const [exerciseModal, setExerciseModal] = useState(false);
   const [form] = Form.useForm();
   const [caseTypes, setCaseTypes] = useState<string[]>([]);
@@ -200,7 +202,7 @@ const Custom = () => {
           messageApi.success(id ? "更新成功" : "创建成功");
           setTimeout(() => {
             if (!id) {
-              window.location.replace("/case-edit/" + res.data.id);
+              window.location.replace("/case-edit/" + res.data.id + "?step=1");
             }
           }, 1500);
         });
@@ -228,6 +230,9 @@ const Custom = () => {
     createCaseIns(ins)
       .then(() => {
         messageApi.success("机构设置成功");
+        window.location.replace(
+          window.location.pathname + "?" + queryString.stringify({ step: 2 })
+        );
       })
       .catch((e) => {
         messageApi.error(e);
@@ -344,7 +349,7 @@ const Custom = () => {
               isReady
                 ? items
                 : [
-                    ...items.slice(0, 4),
+                    ...items.slice(0, 5),
                     getItem("预览和发布", "previewAndPublish", true),
                   ]
             }
@@ -430,39 +435,6 @@ const Custom = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-                {/* <h4>设置分数</h4>
-                <Row>
-                  <Col span={6}>
-                    <Form.Item label="策划环节分数" name="planScore">
-                      <InputNumber
-                        min={0}
-                        max={100}
-                        defaultValue={0}
-                        placeholder=""
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={6}>
-                    <Form.Item label="调研环节分数" name="researchScore">
-                      <InputNumber
-                        min={0}
-                        max={100}
-                        defaultValue={0}
-                        placeholder=""
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={6}>
-                    <Form.Item label="执行环节分数" name="execScore">
-                      <InputNumber
-                        min={0}
-                        max={100}
-                        defaultValue={0}
-                        placeholder=""
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row> */}
                 <h4>案例描述</h4>
                 <Row>
                   <Col span={24}>
@@ -504,7 +476,7 @@ const Custom = () => {
                 <h4>
                   输入需要的机构的名称{" "}
                   <span style={{ color: "#999", marginTop: "-24px" }}>
-                    当前共有9个机构可以使用
+                    当前最多支持9个机构
                   </span>
                 </h4>
 
