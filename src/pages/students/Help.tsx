@@ -1,69 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Table,
-  Button,
-  List,
-  Space,
-  Col,
-  Row,
-  Card,
-  Form,
-  Radio,
-} from "antd";
-import { getExperiments } from "../../api"; // 这里使用了一个假的API请求函数getExperiments
+import { Space, Col, Row, Card } from "antd";
 import { Content } from "antd/es/layout/layout";
-import {
-  AntDesignOutlined,
-  LikeOutlined,
-  MessageOutlined,
-  StarOutlined,
-} from "@ant-design/icons";
-import Meta from "antd/es/card/Meta";
-
-const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
-  <Space>
-    {React.createElement(icon)}
-    {text}
-  </Space>
-);
-const dataMock = Array.from({ length: 23 }).map((_, i) => ({
-  href: "https://ant.design",
-  title: `ant design part ${i}`,
-  avatar: `https://xsgames.co/randomusers/avatar.php?g=pixel&key=${i}`,
-  description: "及时性，大众为先",
-  content: "危机**的5S原则如何体现在“小米案例”与“海底捞案例”当中？.",
-}));
 
 const Help = () => {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
-
-  const handleTableChange = (pagination: any) => {
-    setPagination(pagination);
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    getExperiments(1, 20)
-      .then((response: any) => {
-        setData(dataMock);
-        setPagination((pre) => ({
-          ...pre,
-          total: response.total,
-        }));
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const onFinish = useCallback(() => {
-    console.log("finish");
-  }, []);
-
   return (
     <Content
       style={{

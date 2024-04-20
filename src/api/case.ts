@@ -11,8 +11,10 @@ import { Comment } from "../models/Comment";
 import { AxiosResponse } from "axios";
 
 // Case
-export const getCases = (): Promise<AxiosResponse<Case[]>> => axios.get("/cases");
-export const getCase = (id: number): Promise<AxiosResponse<Case>> => axios.get(`/cases/${id}`);
+export const getCases = (): Promise<AxiosResponse<Case[]>> =>
+  axios.get("/cases");
+export const getCase = (id: number): Promise<AxiosResponse<Case>> =>
+  axios.get(`/cases/${id}`);
 
 // case study
 export const getCaseStudy = (caseID: number, userID: number) =>
@@ -25,7 +27,8 @@ export const removeAnswer = (studyId: number) =>
   axios.delete(`/cases/study/${studyId}`);
 export const getAnswer = (studyID: number) =>
   axios.get(`/cases/study/${studyID}/answer`);
-export const getCaseStudies = (): Promise<AxiosResponse<CaseStudy[]>> => axios.get(`/cases/study/list`);
+export const getCaseStudies = (): Promise<AxiosResponse<CaseStudy[]>> =>
+  axios.get(`/cases/study/list`);
 
 // case
 export const createCase = (data: Partial<Case>) => axios.put(`/cases`, data);
@@ -67,10 +70,12 @@ export const getPosts = (params?: {
   page?: number;
   order?: string;
   tag?: string;
-}): Promise<AxiosResponse<{
-  rows: Community[],
-  count: number,
-}>> => axios.get(`community/posts`, { params });
+}): Promise<
+  AxiosResponse<{
+    rows: Community[];
+    count: number;
+  }>
+> => axios.get(`community/posts`, { params });
 export const createPost = (data: Partial<Community>) =>
   axios.put("community/posts", data);
 export const deletePost = (id: number) => axios.delete(`community/posts/${id}`);

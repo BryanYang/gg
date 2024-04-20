@@ -1,3 +1,0 @@
-
-
-export { getExperiments } from './getExperiments';

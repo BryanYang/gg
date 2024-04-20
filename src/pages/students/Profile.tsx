@@ -1,7 +1,7 @@
 import { AntDesignOutlined } from "@ant-design/icons";
 import { Col, Row, Avatar, Form, Input, Button, Divider, Alert } from "antd";
 import { Content } from "antd/es/layout/layout";
-import axios from "axios";
+import axios from "../../utils/axios";
 import { useCallback, useEffect, useState } from "react";
 import { useMessage } from "../../hooks/MessageContext";
 import { getProfile } from "../../api/user";
