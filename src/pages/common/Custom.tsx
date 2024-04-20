@@ -408,14 +408,22 @@ const Custom = () => {
                 <h4>资源链接</h4>
                 <Row>
                   <span style={{ color: "#999" }}>
-                    图片链接以 jpg/png/jpeg/webp 等结尾
+                    图片链接以 jpg/png/jpeg/webp 等结尾{" "}
+                    <a target="_blank" href="http://49.235.113.228/1.png">
+                      如何得到图片链接?
+                    </a>
                   </span>
                   <Col span={24}>
                     <Form.Item label="图片链接" name="pic">
                       <Input placeholder="" />
                     </Form.Item>
                   </Col>
-                  <span style={{ color: "#999" }}>支持搜狐/优酷等视频链接</span>
+                  <span style={{ color: "#999" }}>
+                    支持搜狐/优酷等视频链接
+                    <a target="_blank" href="http://49.235.113.228/2.png">
+                      如何得到视频链接?
+                    </a>
+                  </span>
                   <Col span={24}>
                     <Form.Item label="视频链接" name="videoUrl">
                       <Input placeholder="" />
