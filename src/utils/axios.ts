@@ -1,7 +1,9 @@
 import axios from "axios";
 
 // 创建一个 Axios 实例
-const instance = axios.create();
+const instance = axios.create({
+  baseURL: window.location.hostname === "localhost" ? "" : "/api/",
+});
 
 // 请求拦截器
 instance.interceptors.request.use(
