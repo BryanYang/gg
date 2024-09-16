@@ -80,7 +80,8 @@ const ExperimentTable = () => {
         title: "结束时间",
         dataIndex: "endDate",
         key: "endDate",
-        render: (v: any) => v ? moment(v).format("YYYY-MM-DD HH:mm:ss") : '--',
+        render: (v: any) =>
+          v ? moment(v).format("YYYY-MM-DD HH:mm:ss") : "--",
       },
       {
         title: "实验班级",
@@ -123,9 +124,9 @@ const ExperimentTable = () => {
                           endDate: null,
                           state: 0,
                           currentStep: 0,
-                          summary: '',
+                          summary: "",
                         });
-                        await removeAnswer(record.id)
+                        await removeAnswer(record.id);
                         navigate(`/case/${record.case.id}`);
                       },
                       cancelText: "取消",
@@ -154,6 +155,10 @@ const ExperimentTable = () => {
                 size="small"
               >
                 分享
+              </Button>
+
+              <Button onClick={() => {}} className="copy-btn" size="small">
+                查看报告
               </Button>
             </Space>
           );

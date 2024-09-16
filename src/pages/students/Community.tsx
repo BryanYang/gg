@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Button,
   List,
@@ -12,6 +12,7 @@ import {
   Radio,
   Modal,
   Tag,
+  InputRef,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import {
@@ -21,10 +22,21 @@ import {
   StarOutlined,
 } from "@ant-design/icons";
 import useLoadData from "../../hooks/useLoadData";
-import { getPosts, star, like, myStarLike, createPost } from "../../api/case";
-import { Community as Posts } from "../../models/Community";
+import {
+  getPosts,
+  star,
+  like,
+  myStarLike,
+  createPost,
+  saveComment,
+  fetchComments,
+  delComment,
+} from "../../api/case";
+import { Comment } from "../../models/Comment";
 import { includes } from "lodash";
 import { useMessage } from "../../hooks/MessageContext";
+import { getProfile } from "../../api/user";
+import { User } from "../../models/User";
 
 const IconText = ({
   icon,
@@ -40,13 +52,8 @@ const IconText = ({
     {text}
   </Space>
 );
-const dataMock = Array.from({ length: 23 }).map((_, i) => ({
-  href: "http://localhost:3001/case/1",
-  title: `案例小助手`,
-  avatar: `https://xsgames.co/randomusers/avatar.php?g=pixel&key=${i}`,
-  description: `恭喜 熊熊${i} 同学完成了xx案例`,
-  content: "选择题得分xx, 用时xx分。",
-}));
+
+const { TextArea } = Input;
 
 const Community = () => {
   const [params, setParams] = useState<{
@@ -63,6 +70,15 @@ const Community = () => {
   const { data, loading, error, refresh } = useLoadData(getPosts, params);
 
   const { data: myStarLikes, refresh: refreshMyStar } = useLoadData(myStarLike);
+
+  const [currentUser, setCurrentUser] = useState<User>();
+  useEffect(() => {
+    getProfile().then((res) => {
+      if (res?.data) {
+        setCurrentUser(res.data);
+      }
+    });
+  }, []);
 
   const [form] = Form.useForm();
 
@@ -84,6 +100,30 @@ const Community = () => {
     },
     [refresh, refreshMyStar]
   );
+
+  const [commentList, setCommentList] = useState<Comment[]>([]);
+
+  const fetchCommentList = useCallback(() => {
+    if (data?.rows?.length) {
+      fetchComments(data?.rows.map((r) => Number(r.id))).then((res) => {
+        setCommentList(res.data);
+      });
+    }
+  }, [data?.rows]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timer;
+    if (data?.rows?.length) {
+      fetchCommentList();
+      interval = setInterval(() => {
+        fetchCommentList();
+      }, 1000 * 60);
+    }
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [data?.rows?.length, fetchCommentList]);
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -114,7 +154,35 @@ const Community = () => {
     setParams((pre) => {
       return { ...pre, search: v };
     });
-  }, [])
+  }, []);
+
+  const inputRef = useRef<InputRef>(null);
+  const [comment, setComment] = useState("");
+  const [commentItem, setCommentItem] = useState<any>(null);
+
+  const onCommentClick = useCallback((item: any) => {
+    setCommentItem(item);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 400);
+  }, []);
+
+  const onSubmitComment = useCallback(async () => {
+    await saveComment(commentItem.id, {
+      content: comment,
+    });
+    setComment("");
+    fetchCommentList();
+    messageApi.success("评论成功");
+  }, [comment, commentItem?.id, fetchCommentList, messageApi]);
+
+  const onClickDeleteComment = useCallback(
+    async (id: number) => {
+      await delComment(id);
+      await fetchCommentList();
+    },
+    [fetchCommentList]
+  );
 
   return (
     <Content
@@ -140,7 +208,10 @@ const Community = () => {
                     </Col>
                     <Col span="6">
                       <Form.Item name="text">
-                        <Input.Search onSearch={onSearch} placeholder="搜索内容" />
+                        <Input.Search
+                          onSearch={onSearch}
+                          placeholder="搜索内容"
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -150,7 +221,7 @@ const Community = () => {
                       <Radio.Button value="default">热度</Radio.Button>
                     </Radio.Group>
                   </Row>
-                  <Row style={{ height: 20}}>
+                  <Row style={{ height: 20 }}>
                     {params.tag && (
                       <Tag
                         color={params.tag === "myLike" ? "magenta" : "orange"}
@@ -186,11 +257,71 @@ const Community = () => {
                 dataSource={data?.rows || []}
                 footer={
                   <div>
-                    <b>公共关系仿真平台</b>
+                    {commentItem && (
+                      <div style={{ textAlign: "left" }}>
+                        <div>
+                          {commentList
+                            .filter((c) => c.postID === commentItem.id)
+                            .map((c) => (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <div
+                                  key={c.id}
+                                  style={{
+                                    paddingBottom: "10px",
+                                    borderBottom: "1px solid #d9d9d9",
+                                    margin: "10px",
+                                    flex: 1,
+                                  }}
+                                >
+                                  <div>
+                                    <span>
+                                      <label>
+                                        用户&nbsp;
+                                        <code>{c.user?.username}</code>
+                                      </label>
+                                      &nbsp;&nbsp;&nbsp;&nbsp;
+                                      <span style={{ color: "gray" }}>
+                                        {c.createdAt}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  {c.content}
+                                </div>
+                                {c.userID === currentUser?.id && (
+                                  <a
+                                    style={{ width: "100px" }}
+                                    onClick={() => onClickDeleteComment(c.id)}
+                                  >
+                                    删除
+                                  </a>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                        <TextArea
+                          ref={inputRef}
+                          showCount
+                          maxLength={100}
+                          onChange={(e) => setComment(e.target.value)}
+                          value={comment}
+                          placeholder={`评论  ${commentItem?.title}`}
+                          style={{ height: 120, resize: "none" }}
+                        />
+                        <Button type="primary" onClick={onSubmitComment}>
+                          提交
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 }
                 renderItem={(item: any) => (
                   <List.Item
+                    className=""
                     key={item.title}
                     actions={[
                       <span onClick={() => onStar(item.id)}>
@@ -213,10 +344,16 @@ const Community = () => {
                           }
                         />
                       </span>,
-                      <span>
+                      <span
+                        onClick={() => {
+                          onCommentClick(item);
+                        }}
+                      >
                         <IconText
                           icon={MessageOutlined}
-                          text={item.comment}
+                          text={commentList
+                            .filter((c) => c.postID === item.id)
+                            .length.toString()}
                           key="list-vertical-message"
                         />
                       </span>,

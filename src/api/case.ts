@@ -82,7 +82,9 @@ export const deletePost = (id: number) => axios.delete(`community/posts/${id}`);
 export const star = (id: number) => axios.post(`community/star/${id}`);
 export const like = (id: number) => axios.post(`community/like/${id}`);
 export const myStarLike = () => axios.get(`community/starLike`);
-export const comment = (id: number, body: Partial<Comment>) =>
+export const saveComment = (id: number, body: Partial<Comment>) =>
   axios.put(`community/comment/${id}`, body);
+export const fetchComments = (ids: number[]) =>
+  axios.get(`community/comments`, { params: { ids } });
 export const delComment = (id: number) =>
   axios.delete(`community/comment/${id}`);

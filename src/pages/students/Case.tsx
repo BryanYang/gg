@@ -23,7 +23,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import "./index.less";
 
-import { Case, CaseStep, CaseStepTitle, CaseStudy } from "../../models/Case";
+import { CaseStep, CaseStepTitle } from "../../models/Case";
 import { useParams } from "react-router-dom";
 import useLoadData from "../../hooks/useLoadData";
 import {
@@ -54,6 +54,8 @@ import { UserAnswer } from "../../models/userAnswer";
 import { ShareAltOutlined } from "@ant-design/icons";
 import ClipboardJS from "clipboard";
 import Fireworks from "../../icons/Fireworks";
+
+const yunPng = require("../../images/yun.png");
 
 const CaseStudyScreen = (props: {}) => {
   let { id } = useParams();
@@ -358,8 +360,18 @@ const CaseStudyScreen = (props: {}) => {
           <img
             className="mapImage"
             alt="bg"
-            src="https://cdn.gwall2.findsoft.com.cn/prisi/3.7.4/static/img/map.jpg"
+            src="http://cdn.gwall2.findsoft.com.cn/prisi/3.7.4/static/img/Bitmap@2x.99db866b.png"
           />
+          <div
+            id="cloud"
+            className="cloud-container"
+            style={{ position: "absolute", top: 0 }}
+          >
+            <img src={yunPng} alt="cloud" className="cloud" />
+            <img src={yunPng} alt="cloud" className="cloud" />
+            <img src={yunPng} alt="cloud" className="cloud" />
+            <img src={yunPng} alt="cloud" className="cloud" />
+          </div>
           {springs.map((props, index) => {
             const finished =
               answeredCount[institutions[index].id] ===
