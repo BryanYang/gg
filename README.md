@@ -46,3 +46,16 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 To learn React, check out the [React documentation](https://reactjs.org/).
 
 scp ./build.zip root@198.23.188.188:/var/www/html
+
+## 数据库变化
+
+```
+npx sequelize-cli migration:generate --name add-new-column-to-table-A
+```
+
+然后编辑
+最后运行
+
+```
+npx sequelize-cli db:migrate
+```
