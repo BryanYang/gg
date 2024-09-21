@@ -19,13 +19,13 @@ import { useUser } from "../../hooks/UserContext";
 import { useCallback } from "react";
 import { useMessage } from "../../hooks/MessageContext";
 import { useNavigate } from "react-router-dom";
-import { filter, sortBy } from "lodash";
+import { compact, filter, sortBy } from "lodash";
 import {
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
-  EllipsisOutlined,
-  SettingOutlined,
+  EyeOutlined,
+  FileAddOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 
@@ -33,7 +33,6 @@ const CaseList = () => {
   const { data, loading, error, refresh } = useLoadData(getCases);
   const { user } = useUser();
   const messageApi = useMessage();
-  const navigate = useNavigate();
 
   const switchStatus = useCallback(
     async (record: Case) => {
@@ -59,72 +58,112 @@ const CaseList = () => {
     [messageApi, refresh]
   );
 
-  const renderItems = useCallback(
-    (record: Case) => {
-      const id = record.id;
-      return [
-        {
-          key: "1",
-          label: (
-            <a
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                navigate(`/case-edit/${id}`);
-                e.preventDefault();
-              }}
-            >
-              编辑
-            </a>
-          ),
-        },
-        {
-          key: "2",
-          label: (
-            <a
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                switchStatus(record);
-                e.preventDefault();
-              }}
-            >
-              {record.status === 1 ? "置为预览" : "发布线上"}
-            </a>
-          ),
-        },
-        {
-          key: "3",
-          label: (
-            <div
+  const navigate = useNavigate();
+
+  const renderCase = (d: Case) => (
+    <Link to={`/case/${d.id}`}>
+      <Card
+        hoverable
+        cover={
+          <img
+            alt={d.title}
+            src={d.pic}
+            height={170}
+            style={{ objectFit: "contain" }}
+          />
+        }
+        actions={compact([
+          <span
+            onClick={(e) => {
+              navigate(`/case-detail/${d.id}`);
+              e.preventDefault();
+            }}
+          >
+            <EyeOutlined key="eye" /> 查看详情
+          </span>,
+          d.userID === user.id ? (
+            <span
               onClick={(e) => {
                 e.preventDefault();
               }}
             >
+              <EditOutlined key="edit" />
+              <Popconfirm
+                title="编辑案例"
+                description={
+                  d.status === 1
+                    ? "案例已上线，请联系教师下线后编辑"
+                    : "如果案例已上线，请联系教师先下线后再编辑"
+                }
+                onConfirm={() => {
+                  if (d.status !== 1) {
+                    navigate(`/case-edit/${d.id}`);
+                  }
+                }}
+                okText="知道了"
+                cancelText="算了"
+              >
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                >
+                  编辑
+                </span>
+              </Popconfirm>
+            </span>
+          ) : undefined,
+          d.userID === user.id ? (
+            <span
+              onClick={(e) => {
+                e.preventDefault();
+              }}
+            >
+              <DeleteOutlined key="ellipsis" />
               <Popconfirm
                 title="删除案例"
-                description="确定要删除案例吗，删除后可以联系管理员恢复"
+                description={
+                  d.status === 1
+                    ? "案例已上线，请联系教师下线或者删除"
+                    : "确定要删除案例吗，删除后可以联系管理员恢复"
+                }
                 onConfirm={() => {
-                  remove(record);
+                  if (d.status !== 1) {
+                    remove(d);
+                  }
                 }}
-                okText="Yes"
-                cancelText="No"
+                okText="删除"
+                cancelText="我再想想"
               >
-                <a
-                  style={{ color: "red" }}
-                  rel="noopener noreferrer"
+                <span
                   onClick={(e) => {
                     e.preventDefault();
                   }}
                 >
                   删除
-                </a>
+                </span>
               </Popconfirm>
-            </div>
-          ),
-          disabled: false,
-        },
-      ];
-    },
-    [remove, switchStatus]
+            </span>
+          ) : undefined,
+        ])}
+      >
+        <Card.Meta
+          description={
+            d.description.substring(0, 70) +
+            (d.description.length > 70 ? "..." : "")
+          }
+          style={{ textAlign: "left", height: 120 }}
+          title={d.title}
+        />
+        <div style={{ borderTop: "1px solid gray", marginTop: 10 }}>
+          <Row>
+            <Col span={20}>
+              {moment(d.createdAt).format("YYYY-MM-DD HH:mm")}
+            </Col>
+          </Row>
+        </div>
+      </Card>
+    </Link>
   );
 
   return (
@@ -144,13 +183,7 @@ const CaseList = () => {
               hoverable
               style={{ height: 380 }}
               cover={
-                <img
-                  alt={"添加"}
-                  style={{ height: "94", width: 88, margin: "40px auto" }}
-                  src={
-                    "https://cdn.gwall2.findsoft.com.cn/prisi/3.7.4/static/img/addCase.113fd14f.png"
-                  }
-                />
+                <FileAddOutlined style={{ fontSize: 46, marginTop: 150 }} />
               }
             >
               添加案例
@@ -160,7 +193,13 @@ const CaseList = () => {
 
         {map(
           sortBy(
-            filter(data, (d) => (!user.isTeacher ? d.status === 1 : true)),
+            filter(data, (d) =>
+              !user.isTeacher
+                ? d.userID === user.id
+                  ? !d.isDeleted
+                  : d.status === 1
+                : !d.isDeleted
+            ),
             "id"
           ),
           (d) => (
@@ -184,6 +223,14 @@ const CaseList = () => {
                       actions={[
                         <span
                           onClick={(e) => {
+                            navigate(`/case-detail/${d.id}`);
+                            e.preventDefault();
+                          }}
+                        >
+                          <EyeOutlined key="eye" /> 查看详情
+                        </span>,
+                        <span
+                          onClick={(e) => {
                             switchStatus(d);
                             e.preventDefault();
                           }}
@@ -204,7 +251,7 @@ const CaseList = () => {
                             e.preventDefault();
                           }}
                         >
-                          <EditOutlined key="edit" /> 编辑
+                          <EditOutlined key="edit" />
                         </span>,
                         <span
                           onClick={(e) => {
@@ -245,35 +292,18 @@ const CaseList = () => {
                 </Badge.Ribbon>
               )}
               {!user.isTeacher && (
-                <Link to={`/case/${d.id}`}>
-                  <Card
-                    hoverable
-                    cover={
-                      <img
-                        alt={d.title}
-                        src={d.pic}
-                        height={170}
-                        style={{ objectFit: "contain" }}
-                      />
-                    }
-                  >
-                    <Card.Meta
-                      description={
-                        d.description.substring(0, 70) +
-                        (d.description.length > 70 ? "..." : "")
-                      }
-                      style={{ textAlign: "left", height: 120 }}
-                      title={d.title}
-                    />
-                    <div style={{ borderTop: "1px solid gray", marginTop: 10 }}>
-                      <Row>
-                        <Col span={20}>
-                          {moment(d.createdAt).format("YYYY-MM-DD HH:mm")}
-                        </Col>
-                      </Row>
-                    </div>
-                  </Card>
-                </Link>
+                <>
+                  {d.userID === user.id ? (
+                    <Badge.Ribbon
+                      color={d.status === 1 ? "green" : "pink"}
+                      text={d.status === 1 ? "上线中" : "预览中"}
+                    >
+                      {renderCase(d)}
+                    </Badge.Ribbon>
+                  ) : (
+                    renderCase(d)
+                  )}
+                </>
               )}
             </Col>
           )

@@ -16,6 +16,11 @@ export const getCases = (): Promise<AxiosResponse<Case[]>> =>
 export const getCase = (id: number): Promise<AxiosResponse<Case>> =>
   axios.get(`/cases/${id}`);
 
+export const rateCase = (
+  id: number,
+  score: number
+): Promise<AxiosResponse<Case>> => axios.post(`/cases/${id}/rate`, { score });
+
 // case study
 export const getCaseStudy = (caseID: number, userID: number) =>
   axios.get(`/cases/${caseID}/study/${userID}`);
@@ -29,6 +34,13 @@ export const getAnswer = (studyID: number) =>
   axios.get(`/cases/study/${studyID}/answer`);
 export const getCaseStudies = (): Promise<AxiosResponse<CaseStudy[]>> =>
   axios.get(`/cases/study/list`);
+export const getAllCaseStudies = (
+  studyID: number
+): Promise<AxiosResponse<CaseStudy[]>> =>
+  axios.get(`/cases/study/${studyID}/all`);
+export const getCaseStudyByID = (
+  id: number
+): Promise<AxiosResponse<CaseStudy>> => axios.get(`/cases/study/list/${id}`);
 
 // case
 export const createCase = (data: Partial<Case>) => axios.put(`/cases`, data);

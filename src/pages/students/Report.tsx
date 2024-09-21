@@ -1,33 +1,32 @@
-import { useCallback, useState } from "react";
-import {
-  Button,
-  Menu,
-  List,
-  Avatar,
-  Space,
-  Radio,
-  Card,
-  Divider,
-  Alert,
-} from "antd";
+import { Card, Divider, Alert, Button } from "antd";
 import { Content } from "antd/es/layout/layout";
-import { getMessages, deleteMessage } from "../../api/message";
 import useLoadData from "../../hooks/useLoadData";
-import { PandaSvg } from "../../icons/panda";
 import Meta from "antd/es/card/Meta";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { getAnswer, getCaseStudyByID } from "../../api/case";
+import moment from "moment";
+import { UserAnswer } from "../../models/userAnswer";
+import map from "lodash/map";
+import { isEqual, sum } from "lodash";
 
 const Report = () => {
-  const [unRead, setUnRead] = useState(false);
-  const { data, loading, error } = useLoadData(getMessages);
   let { id } = useParams();
-  const onDelete = useCallback((id: number) => {
-    deleteMessage(id);
-  }, []);
+  const { data } = useLoadData(getCaseStudyByID, Number(id));
 
-  const handleTableChange = (pagination: any) => {
-    // setPagination(pagination);
-  };
+  const { user } = data || {};
+
+  const { data: answers } = useLoadData(getAnswer, Number(id));
+
+  const scores = map(answers, (answer) => {
+    return isEqual(
+      answer.answers.map(Number).sort(),
+      map(answer?.exercise?.answerNos, Number).sort()
+    )
+      ? answer?.exercise.score
+      : 0;
+  });
+
+  const navigate = useNavigate();
 
   return (
     <Content style={{ width: 800, margin: "0 auto" }}>
@@ -39,21 +38,25 @@ const Report = () => {
             height={200}
             width={"auto"}
             style={{ width: "auto", margin: "0 auto" }}
-            src="https://img1.baidu.com/it/u=1760444638,1038185952&fm=253&fmt=auto&app=138&f=JPG?w=636&h=278"
+            src={data?.case?.pic}
           />
         }
       >
-        <Meta title="答题报告详情" description="2024-11-11" />
+        <Meta
+          title="答题报告详情"
+          description={moment(data?.updatedAt).format("YYYY-MM-DD")}
+        />
         <div style={{ textAlign: "left" }}>
           <div className="summary">
             <div>
-              <strong>姓名:</strong> 张三
+              <strong>姓名:</strong> {user?.username}
             </div>
             <div>
-              <strong>案例:</strong> qq大战360
+              <strong>案例:</strong> {data?.case?.title}
             </div>
             <div>
-              <strong>日期:</strong> 2024-09-10
+              <strong>日期:</strong>{" "}
+              {moment(data?.updatedAt).format("YYYY-MM-DD hh:mm")}
             </div>
             <div>
               <strong>总分:</strong> 80/100
@@ -65,8 +68,8 @@ const Report = () => {
               <svg
                 version="1.1"
                 xmlns="http://www.w3.org/2000/svg"
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 height="96"
                 width="160"
                 viewBox="0 0 1448 1024"
@@ -81,32 +84,44 @@ const Report = () => {
                 ></path>
               </svg>
             </div>
-            <div className="question">
-              <p>问题1: 2+2=?</p>
-              <div className="answer correct">您的答案: 4 （正确）</div>
-            </div>
-            <Divider dashed style={{ borderColor: "#7cb305" }}></Divider>
+            {map(answers, (answer: UserAnswer, index) => {
+              return (
+                <div key={index}>
+                  <div className="question">
+                    <p>
+                      问题{index + 1}: {answer?.exercise?.title}
+                    </p>
+                    <div className="answer incorrect">
+                      您的答案:{" "}
+                      {map(
+                        answer.answers,
+                        (no) =>
+                          answer?.exercise?.options[Number(no)]?.description
+                      ).join(",")}
+                      {isEqual(
+                        answer.answers.map(Number).sort(),
+                        map(answer?.exercise?.answerNos, Number).sort()
+                      ) ? (
+                        <span style={{ color: "green" }}>（正确）</span>
+                      ) : (
+                        <span style={{ color: "red" }}>（错误）</span>
+                      )}
+                    </div>
+                    <div className="correct-answer">
+                      正确答案:{" "}
+                      {map(
+                        answer?.exercise?.answerNos,
+                        (no) =>
+                          answer?.exercise?.options[Number(no)]?.description
+                      ).join(",")}
+                    </div>
+                  </div>
+                  <Divider dashed style={{ borderColor: "#7cb305" }}></Divider>
+                </div>
+              );
+            })}
 
-            <div className="question">
-              <p>问题2: 5*6=?</p>
-              <div className="answer incorrect">您的答案: 35 （错误）</div>
-              <div className="correct-answer">正确答案: 30</div>
-            </div>
-            <Divider dashed style={{ borderColor: "#7cb305" }}></Divider>
-
-            <div className="question">
-              <p>问题3: 9/3=?</p>
-              <div className="answer correct">您的答案: 3 （正确）</div>
-            </div>
-            <Divider dashed style={{ borderColor: "#7cb305" }}></Divider>
-
-            <div className="question">
-              <p>问题4: 地球是圆的吗？</p>
-              <div className="answer correct">您的答案: 是 （正确）</div>
-            </div>
-            <Divider dashed style={{ borderColor: "#7cb305" }}></Divider>
-
-            <div className="score">您的得分: 80分</div>
+            <div className="score">您的得分: {sum(scores)}分</div>
           </div>
           <div style={{ marginTop: 20 }}>
             <Alert
@@ -115,6 +130,15 @@ const Report = () => {
               type="warning"
             />
           </div>
+          <Divider />
+          <Button
+            onClick={() => {
+              navigate(`/studies/${data?.case?.id}`);
+            }}
+            type="link"
+          >
+            查看他人报告
+          </Button>
         </div>
       </Card>
     </Content>

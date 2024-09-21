@@ -1,5 +1,6 @@
 import { Exercise } from "./Exercise";
 import { Institution } from "./Institution";
+import { User } from "./User";
 export enum CaseStep {
   Video = 0,
   Survey = 1,
@@ -31,6 +32,10 @@ export interface Case {
   status: number;
   exercises: Exercise[];
   institutions?: Institution[];
+
+  user?: User;
+  userID?: number;
+  caseStudies?: CaseStudy[];
 }
 
 export interface CaseStudy {
@@ -41,11 +46,15 @@ export interface CaseStudy {
   currentExerciseID?: string;
   // key: exerciseID, value: ExerciseOptionID
   answer: Record<string, string[]>;
-  endDate?: Date,
+  endDate?: Date;
   score?: number;
   state: number;
   summary?: string;
   reportID?: string;
   createdAt?: string;
   updatedAt?: string;
+
+  user?: User;
+  case?: Case;
+  caseRate?: number;
 }

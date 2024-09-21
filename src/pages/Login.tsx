@@ -1,5 +1,5 @@
 import { Form, Input, Button, Alert } from "antd";
-import axios from '../utils/axios';
+import axios from "../utils/axios";
 
 import "./Login.css";
 import { useCallback, useState } from "react";
@@ -25,7 +25,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-header"></div>
       <div className="login-form">
-        <h1>欢迎来到 公共关系系统</h1>
+        <h1>欢迎来到 公共关系学智能场景化互动虚拟仿真实验系统</h1>
         <Form onFinish={onFinish}>
           {!!err && (
             <Alert style={{ marginBottom: 24 }} message={err} type="error" />

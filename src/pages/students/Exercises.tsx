@@ -107,6 +107,20 @@ const ExperimentTable = () => {
         render: (v: any) => (v === 1 ? "已阅" : "未阅"),
       },
       {
+        title: "完成人数",
+        dataIndex: "case",
+        key: "case",
+        render: (v: any) => (
+          <a
+            onClick={() => {
+              navigate(`/studies/${v.id}`);
+            }}
+          >
+            {v.caseStudies?.length}
+          </a>
+        ),
+      },
+      {
         title: "操作",
         key: "action",
         render: (_: any, record: any) => {
@@ -157,7 +171,13 @@ const ExperimentTable = () => {
                 分享
               </Button>
 
-              <Button onClick={() => {}} className="copy-btn" size="small">
+              <Button
+                onClick={() => {
+                  navigate(`/report/${record.id}`);
+                }}
+                className="copy-btn"
+                size="small"
+              >
                 查看报告
               </Button>
             </Space>
@@ -165,7 +185,7 @@ const ExperimentTable = () => {
         },
       },
     ],
-    [navigate]
+    [modal, navigate]
   );
 
   const handleTableChange = (pagination: any) => {

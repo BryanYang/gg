@@ -47,6 +47,8 @@ import { withModal } from "./hooks/ModalContext";
 import ClassList from "./pages/teacher/ClassList";
 import Custom from "./pages/common/Custom";
 import Report from "./pages/students/Report";
+import StudyList from "./pages/students/StudyList";
+import CaseDetail from "./pages/students/CaseDetail";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -190,12 +192,14 @@ const App = (): JSX.Element => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/exercises" element={<Exercises />} />
+          <Route path="/studies/:id" element={<StudyList />} />
           <Route path="/community" element={<Community />} />
           <Route path="/messages" element={<Message />} />
           <Route path="/help" element={<Help />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/caselist" element={<CaseList />} />
           <Route path="/case/:id" element={<Case />} />
+          <Route path="/case-detail/:id" element={<CaseDetail />} />
           <Route path="/classlist" element={<ClassList />} />
           <Route path="/case-edit/:id" element={<Custom />} />
           <Route path="/case-edit" element={<Custom />} />
