@@ -1,14 +1,4 @@
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Col,
-  Divider,
-  Layout,
-  Menu,
-  Row,
-} from "antd";
+import { Avatar, Badge, Col, Layout, Menu, Row } from "antd";
 import {
   MailOutlined,
   BellOutlined,
@@ -17,21 +7,10 @@ import {
   HomeOutlined,
   BookOutlined,
 } from "@ant-design/icons";
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { UserOutlined } from "@ant-design/icons";
 import { Content, Header } from "antd/es/layout/layout";
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Routes,
-  Route,
-  Link,
-} from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import Exercises from "./pages/students/Exercises";
 import { useIsMobile } from "./utils";
 import Home from "./pages/Home";
@@ -49,6 +28,7 @@ import Custom from "./pages/common/Custom";
 import Report from "./pages/students/Report";
 import StudyList from "./pages/students/StudyList";
 import CaseDetail from "./pages/students/CaseDetail";
+import MessageTemplateCom from "./pages/teacher/MessageTemplate";
 
 const headerStyle: React.CSSProperties = {
   textAlign: "center",
@@ -131,6 +111,13 @@ const App = (): JSX.Element => {
                   >
                     <Link to="/caselist">案例管理</Link>
                   </Menu.Item>
+                  <Menu.Item
+                    key="mail"
+                    style={{ float: "right" }}
+                    icon={<BookOutlined />}
+                  >
+                    <Link to="/message-templates">通知管理</Link>
+                  </Menu.Item>
                 </>
               ) : (
                 <>
@@ -195,6 +182,7 @@ const App = (): JSX.Element => {
           <Route path="/studies/:id" element={<StudyList />} />
           <Route path="/community" element={<Community />} />
           <Route path="/messages" element={<Message />} />
+          <Route path="/message-templates" element={<MessageTemplateCom />} />
           <Route path="/help" element={<Help />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/caselist" element={<CaseList />} />

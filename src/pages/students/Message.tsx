@@ -3,7 +3,6 @@ import { Button, Menu, List, Avatar, Space, Radio } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { getMessages, deleteMessage } from "../../api/message";
 import useLoadData from "../../hooks/useLoadData";
-import { Message } from "../../models/Message";
 import { PandaSvg } from "../../icons/panda";
 
 const Messages = () => {
@@ -78,8 +77,10 @@ const Messages = () => {
               >
                 <List.Item.Meta
                   avatar={<Avatar src={item.avatar || <PandaSvg />} />}
-                  title={<a href={item.href}>{item.title}</a>}
-                  description={item.description}
+                  title={
+                    <a href={item.template.title}>{item.template.title}</a>
+                  }
+                  description={item.template.content}
                 />
                 <div style={{ marginLeft: 50 }}> {item.content}</div>
               </List.Item>
