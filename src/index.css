@@ -130,6 +130,10 @@ code {
   height: 100%;
 }
 
+.image-paste img {
+  display: none;
+}
+
 .cloud {
   position: absolute;
   width: 100px;

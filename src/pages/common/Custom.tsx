@@ -36,6 +36,7 @@ import {
   createExercise,
   deleteExercise,
   getCase,
+  upload,
 } from "../../api/case";
 import useLoadData from "../../hooks/useLoadData";
 import { useParams } from "react-router-dom";
@@ -84,6 +85,7 @@ const Custom = () => {
     setStep(index);
   };
 
+  const [fileList, setFileList] = useState<any[]>([]);
   let { id } = useParams();
   const messageApi = useMessage();
   const loadCase = useCallback(() => {
@@ -197,8 +199,19 @@ const Custom = () => {
     form
       .validateFields()
       .then(() => {
-        form.setFieldValue("types", caseTypes);
-        createCase(form.getFieldsValue()).then((res) => {
+        const formData = new FormData();
+        const values = form.getFieldsValue();
+        for (let k in values) {
+          if (k === "types") {
+            continue;
+          }
+          formData.append(k, values[k]);
+        }
+        formData.append("types", caseTypes.join(","));
+        console.log(fileList[0].originFileObj);
+        formData.append("file", fileList[0].originFileObj);
+
+        createCase(formData as any).then((res) => {
           messageApi.success(id ? "更新成功" : "创建成功");
           setTimeout(() => {
             if (!id) {
@@ -210,7 +223,7 @@ const Custom = () => {
       .catch((e) => {
         console.log(e);
       });
-  }, [caseTypes, form, id, messageApi]);
+  }, [caseTypes, fileList, form, id, messageApi]);
 
   const createInstitutions = useCallback(async () => {
     const ins = compact(
@@ -326,6 +339,26 @@ const Custom = () => {
     [caseTypes]
   );
 
+  const handlePaste = useCallback((event: any) => {
+    const items = event.clipboardData.items;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (item.type.startsWith("image")) {
+        const file = item.getAsFile();
+        const newFile = {
+          uid: Date.now(),
+          name: file.name,
+          status: "done",
+          url: URL.createObjectURL(file),
+          originFileObj: file,
+        };
+        setFileList([newFile]);
+      }
+    }
+  }, []);
+
   return (
     <Content
       style={{
@@ -413,14 +446,35 @@ const Custom = () => {
                 <h4>资源链接</h4>
                 <Row>
                   <span style={{ color: "#999" }}>
-                    图片链接以 jpg/png/jpeg/webp 等结尾{" "}
-                    <a target="_blank" href="http://49.235.113.228/1.png">
-                      如何得到图片链接?
-                    </a>
+                    将图片复制到剪贴板，然后粘贴到下方
                   </span>
                   <Col span={24}>
-                    <Form.Item label="图片链接" name="pic">
-                      <Input placeholder="" />
+                    <Form.Item label="上传图片" name="pic">
+                      <div
+                        onPaste={handlePaste}
+                        contentEditable
+                        className="image-paste"
+                        style={{
+                          width: "400px",
+                          border: "1px solid #ccc",
+                          padding: "10px",
+                          marginBottom: "10px",
+                          height: "50px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        复制图片后，点击这里, 然后ctrl + v 粘贴图片
+                      </div>
+
+                      {fileList[0] && (
+                        <>
+                          <img
+                            alt="Preview"
+                            style={{ height: "200px" }}
+                            src={fileList[0]?.url || fileList[0]?.thumbUrl}
+                          />
+                        </>
+                      )}
                     </Form.Item>
                   </Col>
                   <span style={{ color: "#999" }}>

@@ -251,7 +251,7 @@ const CaseList = () => {
                             e.preventDefault();
                           }}
                         >
-                          <EditOutlined key="edit" />
+                          <EditOutlined key="edit" /> 编辑
                         </span>,
                         <span
                           onClick={(e) => {

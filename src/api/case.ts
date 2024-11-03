@@ -43,7 +43,10 @@ export const getCaseStudyByID = (
 ): Promise<AxiosResponse<CaseStudy>> => axios.get(`/cases/study/list/${id}`);
 
 // case
-export const createCase = (data: Partial<Case>) => axios.put(`/cases`, data);
+export const createCase = (data: Partial<Case>) =>
+  axios.post(`/cases`, data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 export const createCaseIns = (data: Partial<Institution>[]) =>
   axios.put(`/cases/institutions`, data);
 export const createExercise = (data: Partial<Exercise>) =>
@@ -52,6 +55,7 @@ export const deleteExercise = (id: number) =>
   axios.delete(`/cases/exercise/${id}`);
 export const createExerciseOption = (data: Partial<ExerciseOption>) =>
   axios.put(`/cases/exercise-option`, data);
+export const upload = (data: any) => axios.put(`/cases/upload`, data);
 
 // Users
 export const getTeachers = () => axios.get("users/teachers");
