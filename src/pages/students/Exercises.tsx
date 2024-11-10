@@ -5,9 +5,10 @@ import { Content } from "antd/es/layout/layout";
 import useLoadData from "../../hooks/useLoadData";
 import { CaseStudy } from "../../models/Case";
 import { getCaseStudies, removeAnswer, updateStudy } from "../../api/case";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { useModal } from "../../hooks/ModalContext";
+import { useUser } from "../../hooks/UserContext";
 
 const ExperimentTable = () => {
   const [pagination, setPagination] = useState({
@@ -29,6 +30,8 @@ const ExperimentTable = () => {
       clipboard.destroy();
     };
   }, []);
+
+  const { user } = useUser();
 
   const columns = useMemo(
     () => [
@@ -126,51 +129,54 @@ const ExperimentTable = () => {
         render: (_: any, record: any) => {
           return (
             <Space>
-              <Button
-                onClick={async () => {
-                  if (record.state === 1) {
-                    modal.confirm({
-                      title: "确定要重做吗？将会删除当前记录",
-                      onOk: async () => {
-                        await updateStudy({
-                          ...record,
-                          startDate: new Date().getTime(),
-                          endDate: null,
-                          state: 0,
-                          currentStep: 0,
-                          summary: "",
+              {!id && (
+                <>
+                  <Button
+                    onClick={async () => {
+                      if (record.state === 1) {
+                        modal.confirm({
+                          title: "确定要重做吗？将会删除当前记录",
+                          onOk: async () => {
+                            await updateStudy({
+                              ...record,
+                              startDate: new Date().getTime(),
+                              endDate: null,
+                              state: 0,
+                              currentStep: 0,
+                              summary: "",
+                            });
+                            await removeAnswer(record.id);
+                            navigate(`/case/${record.case.id}`);
+                          },
+                          cancelText: "取消",
+                          okText: "重做",
                         });
-                        await removeAnswer(record.id);
+                      } else {
                         navigate(`/case/${record.case.id}`);
-                      },
-                      cancelText: "取消",
-                      okText: "重做",
-                    });
-                  } else {
-                    navigate(`/case/${record.case.id}`);
-                  }
-                }}
-                type="primary"
-                size="small"
-              >
-                {record.state === 1 ? "重做" : "继续"}
-              </Button>
+                      }
+                    }}
+                    type="primary"
+                    size="small"
+                  >
+                    {record.state === 1 ? "重做" : "继续"}
+                  </Button>
 
-              <Button
-                onClick={() => {}}
-                data-clipboard-text={`我刚在这里完成了一项测试，你也来试试吧！➡️${
-                  window.location.protocol +
-                  "//" +
-                  window.location.host +
-                  "/case/" +
-                  record.case.id
-                }`}
-                className="copy-btn"
-                size="small"
-              >
-                分享
-              </Button>
-
+                  <Button
+                    onClick={() => {}}
+                    data-clipboard-text={`我刚在这里完成了一项测试，你也来试试吧！➡️${
+                      window.location.protocol +
+                      "//" +
+                      window.location.host +
+                      "/case/" +
+                      record.case.id
+                    }`}
+                    className="copy-btn"
+                    size="small"
+                  >
+                    分享
+                  </Button>
+                </>
+              )}
               <Button
                 onClick={() => {
                   navigate(`/report/${record.id}`);
@@ -192,7 +198,9 @@ const ExperimentTable = () => {
     setPagination(pagination);
   };
 
-  const { data, loading, error } = useLoadData(getCaseStudies);
+  let { id } = useParams();
+
+  const { data, loading, error } = useLoadData(getCaseStudies, id);
 
   return (
     <Content style={{ padding: 60, width: 1440, margin: "0 auto" }}>

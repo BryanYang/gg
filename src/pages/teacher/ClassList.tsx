@@ -20,6 +20,7 @@ import map from "lodash/map";
 import { useMessage } from "../../hooks/MessageContext";
 import { ExclamationCircleFilled, TeamOutlined } from "@ant-design/icons";
 import { find } from "lodash";
+import { useNavigate } from "react-router";
 
 const DEFAULT_PASSWORD = "123456";
 
@@ -233,9 +234,10 @@ const ClassList = () => {
     });
     messageApi.open({
       type: "success",
-      content: '重置成功',
+      content: "重置成功",
     });
   }, [form2, messageApi, visibleStu]);
+  const navigate = useNavigate();
 
   return (
     <Content
@@ -299,6 +301,7 @@ const ClassList = () => {
       </Modal>
 
       <Modal
+        width={800}
         open={!!visibleStu}
         title="学生明细"
         onCancel={() => {
@@ -363,6 +366,14 @@ const ClassList = () => {
                     }}
                   >
                     编辑
+                  </a>
+                  <a
+                    onClick={() => {
+                      // exercises
+                      navigate(`/exercises/${record.id}`);
+                    }}
+                  >
+                    查看实验
                   </a>
                   <a
                     onClick={() => {

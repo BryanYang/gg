@@ -32,8 +32,16 @@ export const removeAnswer = (studyId: number) =>
   axios.delete(`/cases/study/${studyId}`);
 export const getAnswer = (studyID: number) =>
   axios.get(`/cases/study/${studyID}/answer`);
-export const getCaseStudies = (): Promise<AxiosResponse<CaseStudy[]>> =>
-  axios.get(`/cases/study/list`);
+export const getCaseStudies = (
+  id?: string
+): Promise<AxiosResponse<CaseStudy[]>> =>
+  id
+    ? axios.get(`/cases/study/user/${id}/list`)
+    : axios.get(`/cases/study/list`);
+export const getCaseStudiesByUserID = (
+  userID: number
+): Promise<AxiosResponse<CaseStudy[]>> =>
+  axios.get(`/cases/study/user/${userID}/list`);
 export const getAllCaseStudies = (
   studyID: number
 ): Promise<AxiosResponse<CaseStudy[]>> =>

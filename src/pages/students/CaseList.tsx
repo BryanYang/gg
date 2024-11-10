@@ -7,6 +7,10 @@ import {
   MenuProps,
   Badge,
   Popconfirm,
+  Select,
+  Form,
+  Input,
+  Button,
 } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { Link } from "react-router-dom";
@@ -16,7 +20,7 @@ import map from "lodash/map";
 import { createCase, getCases } from "../../api/case";
 import moment from "moment";
 import { useUser } from "../../hooks/UserContext";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMessage } from "../../hooks/MessageContext";
 import { useNavigate } from "react-router-dom";
 import { compact, filter, sortBy } from "lodash";
@@ -30,9 +34,15 @@ import {
 } from "@ant-design/icons";
 
 const CaseList = () => {
-  const { data, loading, error, refresh } = useLoadData(getCases);
+  const { data: allData, loading, error, refresh } = useLoadData(getCases);
   const { user } = useUser();
   const messageApi = useMessage();
+
+  const [data, setData] = useState(allData);
+
+  useEffect(() => {
+    setData(allData);
+  }, [allData]);
 
   const switchStatus = useCallback(
     async (record: Case) => {
@@ -166,6 +176,32 @@ const CaseList = () => {
     </Link>
   );
 
+  const handleFilterChange = useCallback(() => {}, []);
+
+  const [form] = Form.useForm();
+
+  const onSearch = useCallback(() => {
+    const options = form.getFieldsValue();
+    const dataAfterFilter = filter(allData, (d: Case) => {
+      return ((options.title ? d.title.includes(options.title) : true) &&
+        (options.type ? d.types?.includes(options.type) : true) &&
+        (options.source
+          ? options.source === "fromMyself"
+            ? d.userID === user.id
+            : d.userID !== user.id
+          : true) &&
+        (options.status !== undefined
+          ? d.status === options.status
+          : true)) as boolean;
+    });
+    setData(dataAfterFilter);
+  }, [allData, form]);
+
+  const onClearSearch = useCallback(() => {
+    form.resetFields();
+    setData(allData);
+  }, [allData, form]);
+
   return (
     <Content
       style={{
@@ -176,6 +212,75 @@ const CaseList = () => {
         marginTop: 80,
       }}
     >
+      <Row>
+        <Col span={24}>
+          <Form
+            form={form}
+            labelCol={{ span: 4 }}
+            wrapperCol={{ span: 4 }}
+            layout="inline"
+            style={{ maxWidth: "none" }}
+          >
+            <Form.Item name={"title"} label="案例名">
+              <Input
+                size="large"
+                onChange={handleFilterChange}
+                style={{ width: 250 }}
+              />
+            </Form.Item>
+            <Form.Item name={"source"} label="来源">
+              <Select
+                size="large"
+                defaultValue={[]}
+                onChange={handleFilterChange}
+                style={{ width: 200 }}
+                options={[
+                  { value: "fromOthers", label: "他人案例" },
+                  { value: "fromMyself", label: "我上传的" },
+                ]}
+              />
+            </Form.Item>
+
+            <Form.Item labelCol={{ span: 4 }} name={"status"} label="状态">
+              <Select
+                size="large"
+                defaultValue={[]}
+                onChange={handleFilterChange}
+                style={{ width: 200 }}
+                options={[
+                  { value: 1, label: "上线中" },
+                  { value: 0, label: "预览中" },
+                ]}
+              />
+            </Form.Item>
+
+            <Form.Item labelCol={{ span: 6 }} name={"type"} label="案例类型">
+              <Select
+                size="large"
+                defaultValue={[]}
+                onChange={handleFilterChange}
+                style={{ width: 200 }}
+                options={[
+                  { value: "危机公关", label: "危机公关" },
+                  { value: "关系公关", label: "关系公关" },
+                  { value: "形象公关", label: "形象公关" },
+                ]}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" onClick={onSearch}>
+                搜索
+              </Button>
+            </Form.Item>
+
+            <Form.Item>
+              <Button onClick={onClearSearch}>清空筛选</Button>
+            </Form.Item>
+          </Form>
+        </Col>
+        <Col></Col>
+      </Row>
       <Row gutter={40}>
         <Col style={{ marginTop: 20 }} span={6}>
           <Link to={`/case-edit`}>
@@ -197,7 +302,7 @@ const CaseList = () => {
               !user.isTeacher
                 ? d.userID === user.id
                   ? !d.isDeleted
-                  : d.status === 1
+                  : d.status === 1 && !d.isDeleted
                 : !d.isDeleted
             ),
             "id"
