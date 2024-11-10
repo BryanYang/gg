@@ -241,18 +241,20 @@ const CaseList = () => {
               />
             </Form.Item>
 
-            <Form.Item labelCol={{ span: 4 }} name={"status"} label="状态">
-              <Select
-                size="large"
-                defaultValue={[]}
-                onChange={handleFilterChange}
-                style={{ width: 200 }}
-                options={[
-                  { value: 1, label: "上线中" },
-                  { value: 0, label: "预览中" },
-                ]}
-              />
-            </Form.Item>
+            {user.isTeacher && (
+              <Form.Item labelCol={{ span: 4 }} name={"status"} label="状态">
+                <Select
+                  size="large"
+                  defaultValue={[]}
+                  onChange={handleFilterChange}
+                  style={{ width: 200 }}
+                  options={[
+                    { value: 1, label: "上线中" },
+                    { value: 0, label: "预览中" },
+                  ]}
+                />
+              </Form.Item>
+            )}
 
             <Form.Item labelCol={{ span: 6 }} name={"type"} label="案例类型">
               <Select
