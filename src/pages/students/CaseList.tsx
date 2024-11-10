@@ -195,7 +195,7 @@ const CaseList = () => {
           : true)) as boolean;
     });
     setData(dataAfterFilter);
-  }, [allData, form]);
+  }, [allData, form, user.id]);
 
   const onClearSearch = useCallback(() => {
     form.resetFields();
