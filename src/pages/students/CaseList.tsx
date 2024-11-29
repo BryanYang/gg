@@ -307,10 +307,10 @@ const CaseList = () => {
                   : d.status === 1 && !d.isDeleted
                 : !d.isDeleted
             ),
-            "id"
+            (data) => -new Date(data.updatedAt).getTime()
           ),
           (d) => (
-            <Col key={d.title} style={{ marginTop: 20 }} span={6}>
+            <Col key={d.id} style={{ marginTop: 20 }} span={6}>
               {user.isTeacher && (
                 <Badge.Ribbon
                   color={d.status === 1 ? "green" : "pink"}

@@ -36,6 +36,7 @@ export interface Case {
   user?: User;
   userID?: number;
   caseStudies?: CaseStudy[];
+  updatedAt: string;
 }
 
 export interface CaseStudy {
