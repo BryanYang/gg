@@ -11,10 +11,12 @@ import {
   listUsers,
   updateClassList,
   updateUser,
+  createUsers,
 } from "../../api/case";
+import Papa from "papaparse";
 import { ClassList as Classes } from "../../models/Class";
 import { ColumnsType } from "antd/es/table";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { User } from "../../models/User";
 import map from "lodash/map";
 import { useMessage } from "../../hooks/MessageContext";
@@ -223,9 +225,49 @@ const ClassList = () => {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const onCancel = useCallback(() => {
     setVisible(false);
   }, []);
+
+  const handleFileChange = useCallback(
+    (event: any) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      Papa.parse(file, {
+        header: true, // 第一行作为字段名
+        skipEmptyLines: true,
+        complete: function (results) {
+          console.log("解析结果 JSON:", results.data);
+          const students = (results.data as Array<Partial<User>>).map((s) => ({
+            ...s,
+            password: s.password ?? DEFAULT_PASSWORD,
+          }));
+          createUsers(visibleStu!.id, students).then(() => {
+            messageApi.open({
+              type: "success",
+              content: "上传成功",
+            });
+            listUsers(visibleStu!.id).then((res) => {
+              if (res) {
+                setStudents(res.data);
+              }
+            });
+          });
+        },
+        error: function (err) {
+          console.error("解析错误:", err);
+          messageApi.open({
+            type: "error",
+            content: "解析错误，请检查文件格式",
+          });
+        },
+      });
+    },
+    [messageApi, visibleStu]
+  );
 
   const resetPassword = useCallback(async () => {
     await updateUser(visibleStu!.id, {
@@ -310,6 +352,35 @@ const ClassList = () => {
         footer={
           <Space>
             <Button
+              type="link"
+              onClick={() => {
+                const headers = ["email", "username", "password"];
+                const csvContent = headers.join(",") + "\n" + ",,\n";
+
+                const blob = new Blob([csvContent], {
+                  type: "text/csv;charset=utf-8;",
+                });
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", "上传学生模板.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+            >
+              下载上传模板
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => {
+                fileInputRef.current?.click();
+              }}
+            >
+              批量上传
+            </Button>
+            <Button
               type="primary"
               onClick={() => {
                 form2.resetFields();
@@ -388,7 +459,13 @@ const ClassList = () => {
           ]}
         ></Table>
       </Modal>
-
+      <input
+        type="file"
+        accept=".csv"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        style={{ display: "none" }}
+      />
       <Modal
         open={editStu}
         title="编辑学生"
@@ -418,7 +495,6 @@ const ClassList = () => {
           >
             <Input />
           </Form.Item>
-
           <Form.Item label="密码" name="password">
             <span>初始密码为 {DEFAULT_PASSWORD}</span>
             <a

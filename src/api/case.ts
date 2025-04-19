@@ -83,6 +83,8 @@ export const listUsers = (id: number | string) =>
   axios.get(`class-list/${id}/users`);
 export const createUser = (id: number | string, data: Partial<User>) =>
   axios.put(`class-list/${id}/user`, data);
+export const createUsers = (id: number | string, data: Array<Partial<User>>) =>
+  axios.put(`class-list/${id}/users`, data);
 export const updateUser = (id: number | string, data: Partial<User>) =>
   axios.post(`class-list/${id}/user`, data);
 export const deleteUser = (id: number | string, userID: number) =>

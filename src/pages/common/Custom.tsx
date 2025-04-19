@@ -201,14 +201,16 @@ const Custom = () => {
       .then(() => {
         const formData = new FormData();
         const values = form.getFieldsValue();
+
         for (let k in values) {
-          if (k === "types") {
+          if (k === "types" || !values[k]) {
             continue;
           }
           formData.append(k, values[k]);
         }
+
         formData.append("types", caseTypes.join(","));
-        console.log(fileList[0].originFileObj);
+
         formData.append("file", fileList[0].originFileObj);
 
         createCase(formData as any).then((res) => {
